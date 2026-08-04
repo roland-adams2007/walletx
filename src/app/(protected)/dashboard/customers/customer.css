@@ -1,0 +1,120 @@
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.input-field:read-only {
+  background: var(--brand-softer);
+  color: var(--muted);
+}
+
+.btn-secondary {
+  background: var(--brand-softer);
+  color: var(--brand-dark);
+  border: 1px solid var(--line);
+  transition: background 0.15s ease;
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  background: var(--brand-soft);
+}
+
+.customers-table {
+  border-collapse: collapse;
+}
+.customers-table thead th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.85rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+.customers-table tbody td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.875rem;
+}
+.customers-table tbody tr {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.customers-table tbody tr:hover {
+  background: var(--brand-softer);
+}
+.customers-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #22a35a;
+  display: inline-block;
+}
+
+.overlay {
+  background: rgba(14, 32, 25, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 50;
+}
+.overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.side-panel {
+  background: #fff;
+  width: 420px;
+  max-width: 92vw;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  z-index: 51;
+}
+.side-panel.open {
+  transform: translateX(0);
+}
+
+.modal {
+  background: #fff;
+  width: 460px;
+  max-width: 92vw;
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  z-index: 61;
+}
+.modal-overlay {
+  background: rgba(14, 32, 25, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 60;
+}
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-overlay.show .modal {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.copy-btn {
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+.copy-btn:hover {
+  color: var(--brand);
+}
+
+.tx-row {
+  background: var(--brand-softer);
+}
