@@ -32,7 +32,7 @@ export const useUploadStore = create<UploadState>()((set) => ({
       formData.append("file", file);
 
       const res = await api.post<UploadResponse>("/uploads", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { "Content-Type": undefined },
       });
 
       set({ isUploading: false });

@@ -1,37 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-<<<<<<< HEAD
-import { Building2, ChevronDown, Clock } from "lucide-react";
-
-const banks = [
-  { code: "044", name: "Access Bank" },
-  { code: "058", name: "GTBank" },
-  { code: "057", name: "Zenith Bank" },
-  { code: "033", name: "United Bank for Africa" },
-  { code: "011", name: "First Bank of Nigeria" },
-  { code: "50211", name: "Kuda Microfinance Bank" },
-  { code: "50515", name: "Moniepoint MFB" },
-  { code: "999992", name: "Opay" },
-];
-
-export default function AccountPage() {
-  const [logoSrc, setLogoSrc] = useState<string | null>(null);
-  const [bizType, setBizType] = useState<"individual" | "registered">("individual");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [selectedBank, setSelectedBank] = useState<{ code: string; name: string } | null>(null);
-  const [accountNumber, setAccountNumber] = useState("");
-  const [resolvedName, setResolvedName] = useState("");
-  const [resolving, setResolving] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
-  const filteredBanks = banks.filter((b) => b.name.toLowerCase().includes(search.toLowerCase()));
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-=======
 import {
   Building2,
   ChevronDown,
@@ -185,7 +154,7 @@ export default function AccountPage() {
         wrapperRef.current &&
         !wrapperRef.current.contains(e.target as Node)
       ) {
->>>>>>> temp-main
+
         setDropdownOpen(false);
       }
     }
@@ -193,37 +162,6 @@ export default function AccountPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-<<<<<<< HEAD
-  function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setLogoSrc(ev.target?.result as string);
-    reader.readAsDataURL(file);
-  }
-
-  function handleVerify() {
-    if (!/^\d{10}$/.test(accountNumber)) {
-      setResolvedName("");
-      return;
-    }
-    setResolving(true);
-    setTimeout(() => {
-      setResolvedName("ORIMI GOODS LIMITED");
-      setResolving(false);
-    }, 700);
-  }
-
-  return (
-    <>
-      <div className="card rounded-2xl p-5 flex items-center gap-2.5">
-        <span className="pill pill-pending">
-          <Clock className="w-3 h-3" />
-          KYC pending
-        </span>
-      </div>
-
-=======
   async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !selectedBusinessId) return;
@@ -354,21 +292,11 @@ export default function AccountPage() {
 
   return (
     <>
->>>>>>> temp-main
       <div className="card rounded-2xl p-6">
         <h3 className="font-semibold text-lg mb-5">Business details</h3>
 
         <div className="flex items-center gap-4 mb-6">
           <div
-<<<<<<< HEAD
-            className="w-16 h-16 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
-            style={{ background: "var(--brand-soft)" }}
-          >
-            {logoSrc ? (
-              <img src={logoSrc} className="w-full h-full object-cover" alt="Business logo" />
-            ) : (
-              <Building2 className="w-6 h-6" style={{ color: "var(--brand)" }} />
-=======
             className="w-16 h-16 rounded-xl relative flex items-center justify-center shrink-0 overflow-hidden"
             style={{ background: "var(--brand-soft)" }}
           >
@@ -398,19 +326,11 @@ export default function AccountPage() {
               >
                 <X className="w-3 h-3" />
               </button>
->>>>>>> temp-main
             )}
           </div>
           <div>
             <label
               htmlFor="logo-upload"
-<<<<<<< HEAD
-              className="btn-secondary inline-block px-3.5 py-2 rounded-lg text-sm font-medium"
-            >
-              Upload logo
-            </label>
-            <input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
-=======
               className="btn-secondary inline-block px-3.5 py-2 rounded-lg text-sm font-medium cursor-pointer"
             >
               Upload logo
@@ -423,129 +343,72 @@ export default function AccountPage() {
               onChange={handleLogoChange}
               disabled={isUploading}
             />
->>>>>>> temp-main
             <p className="text-xs mt-1.5" style={{ color: "var(--muted)" }}>
               PNG or JPG, up to 2MB.
             </p>
           </div>
         </div>
 
-<<<<<<< HEAD
-        <form className="space-y-4">
-          <div>
-            <label htmlFor="biz-name" className="text-sm font-medium block mb-1.5">
-=======
         <form className="space-y-4" onSubmit={handleSaveDetails}>
           <div>
             <label
               htmlFor="biz-name"
               className="text-sm font-medium block mb-1.5"
             >
->>>>>>> temp-main
               Business name
             </label>
             <input
               id="biz-name"
               type="text"
-<<<<<<< HEAD
-              defaultValue="Orimi Goods"
-=======
               value={name}
               onChange={(e) => setName(e.target.value)}
->>>>>>> temp-main
               className="input-field w-full px-3.5 py-2.5 rounded-lg text-sm"
             />
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-<<<<<<< HEAD
-              <label htmlFor="biz-email" className="text-sm font-medium block mb-1.5">
-=======
               <label
                 htmlFor="biz-email"
                 className="text-sm font-medium block mb-1.5"
               >
->>>>>>> temp-main
                 Business email
               </label>
               <input
                 id="biz-email"
                 type="email"
-<<<<<<< HEAD
-                defaultValue="hello@orimigoods.com"
-=======
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
->>>>>>> temp-main
                 className="input-field w-full px-3.5 py-2.5 rounded-lg text-sm"
               />
             </div>
             <div>
-<<<<<<< HEAD
-              <label htmlFor="biz-phone" className="text-sm font-medium block mb-1.5">
-=======
               <label
                 htmlFor="biz-phone"
                 className="text-sm font-medium block mb-1.5"
               >
->>>>>>> temp-main
                 Business phone
               </label>
               <input
                 id="biz-phone"
                 type="tel"
-<<<<<<< HEAD
-                defaultValue="+2348012345678"
-=======
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
->>>>>>> temp-main
                 className="input-field w-full px-3.5 py-2.5 rounded-lg text-sm"
               />
             </div>
           </div>
 
           <div>
-<<<<<<< HEAD
-            <label className="text-sm font-medium block mb-1.5">Business type</label>
-            <div className="segment rounded-xl text-sm font-medium">
-              <input
-                type="radio"
-                name="biz-type"
-                id="biz-type-individual"
-                checked={bizType === "individual"}
-                onChange={() => setBizType("individual")}
-              />
-              <label htmlFor="biz-type-individual">Individual</label>
-              <input
-                type="radio"
-                name="biz-type"
-                id="biz-type-registered"
-                checked={bizType === "registered"}
-                onChange={() => setBizType("registered")}
-              />
-              <label htmlFor="biz-type-registered">Registered business</label>
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="biz-industry" className="text-sm font-medium block mb-1.5">
-=======
             <label
               htmlFor="biz-industry"
               className="text-sm font-medium block mb-1.5"
             >
->>>>>>> temp-main
               Industry
             </label>
             <select
               id="biz-industry"
-<<<<<<< HEAD
-              defaultValue="Retail & e-commerce"
-=======
               value={industry}
               onChange={(e) => setIndustry(e.target.value)}
->>>>>>> temp-main
               className="input-field w-full px-3.5 py-2.5 rounded-lg text-sm"
             >
               <option>Retail & e-commerce</option>
@@ -559,13 +422,6 @@ export default function AccountPage() {
           </div>
 
           <div className="pt-2">
-<<<<<<< HEAD
-            <button type="submit" className="btn-primary px-5 py-2.5 rounded-lg text-sm font-medium text-white">
-              Save changes
-            </button>
-          </div>
-        </form>
-=======
             <button
               type="submit"
               disabled={isUpdatingDetails}
@@ -646,7 +502,6 @@ export default function AccountPage() {
             </div>
           </div>
         </div>
->>>>>>> temp-main
       </div>
 
       <div className="card rounded-2xl p-6">
@@ -654,11 +509,7 @@ export default function AccountPage() {
         <p className="text-sm mb-5" style={{ color: "var(--muted)" }}>
           Settlements are sent to this account.
         </p>
-<<<<<<< HEAD
-        <form className="space-y-4">
-=======
         <form className="space-y-4" onSubmit={handleSavePayout}>
->>>>>>> temp-main
           <div className="relative" ref={wrapperRef}>
             <label className="text-sm font-medium block mb-1.5">Bank</label>
             <button
@@ -666,13 +517,9 @@ export default function AccountPage() {
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="input-field w-full px-3.5 py-2.5 rounded-lg text-sm flex items-center justify-between text-left"
             >
-<<<<<<< HEAD
-              <span style={{ color: selectedBank ? "var(--text)" : "var(--muted)" }}>
-=======
               <span
                 style={{ color: selectedBank ? "var(--text)" : "var(--muted)" }}
               >
->>>>>>> temp-main
                 {selectedBank ? selectedBank.name : "Select your bank"}
               </span>
               <ChevronDown
@@ -687,14 +534,10 @@ export default function AccountPage() {
 
             {dropdownOpen && (
               <div className="custom-dropdown absolute left-0 top-[calc(100%+6px)] w-full rounded-lg overflow-hidden z-20">
-<<<<<<< HEAD
-                <div className="p-2" style={{ borderBottom: "1px solid var(--line)" }}>
-=======
                 <div
                   className="p-2"
                   style={{ borderBottom: "1px solid var(--line)" }}
                 >
->>>>>>> temp-main
                   <input
                     type="text"
                     placeholder="Search banks"
@@ -707,16 +550,6 @@ export default function AccountPage() {
                 <div className="max-h-56 overflow-y-auto">
                   {filteredBanks.map((bank) => (
                     <button
-<<<<<<< HEAD
-                      key={bank.code}
-                      type="button"
-                      onClick={() => {
-                        setSelectedBank(bank);
-                        setDropdownOpen(false);
-                      }}
-                      className={`custom-option w-full px-3.5 py-2.5 text-sm text-left ${
-                        selectedBank?.code === bank.code ? "selected" : ""
-=======
                       key={bank.bank_code}
                       type="button"
                       onClick={() => {
@@ -731,7 +564,6 @@ export default function AccountPage() {
                         selectedBank?.bank_code === bank.bank_code
                           ? "selected"
                           : ""
->>>>>>> temp-main
                       }`}
                     >
                       {bank.name}
@@ -739,14 +571,10 @@ export default function AccountPage() {
                   ))}
                 </div>
                 {filteredBanks.length === 0 && (
-<<<<<<< HEAD
-                  <p className="px-3.5 py-3 text-sm" style={{ color: "var(--muted)" }}>
-=======
                   <p
                     className="px-3.5 py-3 text-sm"
                     style={{ color: "var(--muted)" }}
                   >
->>>>>>> temp-main
                     No banks match your search.
                   </p>
                 )}
@@ -755,14 +583,10 @@ export default function AccountPage() {
           </div>
           <div className="grid sm:grid-cols-2 gap-4 items-end">
             <div>
-<<<<<<< HEAD
-              <label htmlFor="account_number" className="text-sm font-medium block mb-1.5">
-=======
               <label
                 htmlFor="account_number"
                 className="text-sm font-medium block mb-1.5"
               >
->>>>>>> temp-main
                 Account number
               </label>
               <input
@@ -772,29 +596,16 @@ export default function AccountPage() {
                 maxLength={10}
                 placeholder="0123456789"
                 value={accountNumber}
-<<<<<<< HEAD
-                onChange={(e) => setAccountNumber(e.target.value)}
-=======
                 onChange={(e) => {
                   setAccountNumber(e.target.value);
                   clearVerifiedAccount();
                 }}
->>>>>>> temp-main
                 className="input-field w-full px-3.5 py-2.5 rounded-lg text-sm"
               />
             </div>
             <button
               type="button"
               onClick={handleVerify}
-<<<<<<< HEAD
-              className="btn-secondary px-4 py-2.5 rounded-lg text-sm font-medium h-[42px]"
-            >
-              Verify account
-            </button>
-          </div>
-          <div>
-            <label htmlFor="resolved_account_name" className="text-sm font-medium block mb-1.5">
-=======
               disabled={isVerifying}
               className="btn-secondary px-4 py-2.5 rounded-lg text-sm font-medium h-[42px] disabled:opacity-60"
             >
@@ -806,43 +617,28 @@ export default function AccountPage() {
               htmlFor="resolved_account_name"
               className="text-sm font-medium block mb-1.5"
             >
->>>>>>> temp-main
               Account name
             </label>
             <input
               id="resolved_account_name"
               type="text"
               readOnly
-<<<<<<< HEAD
-              value={resolving ? "Resolving..." : resolvedName}
-=======
               value={isVerifying ? "Resolving..." : displayedAccountName}
->>>>>>> temp-main
               placeholder="Verify account to see the name"
               className="input-field w-full px-3.5 py-2.5 rounded-lg text-sm"
             />
           </div>
           <div className="pt-2">
-<<<<<<< HEAD
-            <button type="submit" className="btn-primary px-5 py-2.5 rounded-lg text-sm font-medium text-white">
-              Save payout account
-=======
             <button
               type="submit"
               disabled={isUpdatingSettlementBank || !verifiedAccount}
               className="btn-primary px-5 py-2.5 rounded-lg text-sm font-medium text-white disabled:opacity-60"
             >
               {isUpdatingSettlementBank ? "Saving..." : "Save payout account"}
->>>>>>> temp-main
             </button>
           </div>
         </form>
       </div>
-<<<<<<< HEAD
-    </>
-  );
-}
-=======
 
       <ConfirmModal
         open={upgradeModalOpen}
@@ -856,4 +652,3 @@ export default function AccountPage() {
     </>
   );
 }
->>>>>>> temp-main

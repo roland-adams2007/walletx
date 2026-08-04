@@ -1,12 +1,5 @@
 "use client";
 
-<<<<<<< HEAD
-import { useState } from "react";
-
-export default function PreferencesPage() {
-  const [customerPayments, setCustomerPayments] = useState(true);
-  const [businessTransactions, setBusinessTransactions] = useState(true);
-=======
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useBusinessStore } from "@/app/stores/store";
@@ -67,7 +60,6 @@ export default function PreferencesPage() {
       </div>
     );
   }
->>>>>>> temp-main
 
   return (
     <div className="card rounded-2xl p-6">
@@ -78,37 +70,6 @@ export default function PreferencesPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-<<<<<<< HEAD
-            <p className="text-sm font-medium">Customer payments</p>
-            <p className="text-xs" style={{ color: "var(--muted)" }}>
-              When a buyer pays into your wallet.
-            </p>
-          </div>
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={customerPayments}
-              onChange={() => setCustomerPayments(!customerPayments)}
-            />
-            <span className="switch-track"></span>
-          </label>
-        </div>
-        <div className="flex items-center justify-between gap-4 pt-4" style={{ borderTop: "1px solid var(--line)" }}>
-          <div>
-            <p className="text-sm font-medium">Business transactions</p>
-            <p className="text-xs" style={{ color: "var(--muted)" }}>
-              Transfers and payouts you send from your business.
-            </p>
-          </div>
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={businessTransactions}
-              onChange={() => setBusinessTransactions(!businessTransactions)}
-            />
-            <span className="switch-track"></span>
-          </label>
-=======
             <p className="text-sm font-medium">Send receipt to customer</p>
             <p className="text-xs" style={{ color: "var(--muted)" }}>
               Email the customer a receipt when they pay into your wallet.
@@ -206,13 +167,8 @@ export default function PreferencesPage() {
               <span className="switch-track"></span>
             </label>
           </div>
->>>>>>> temp-main
         </div>
       </div>
     </div>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> temp-main

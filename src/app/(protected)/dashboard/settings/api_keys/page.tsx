@@ -290,9 +290,7 @@ export default function ApiKeysPage() {
           disabled={isUpdatingIpWhitelist}
           className="btn-primary px-5 py-2.5 rounded-lg text-sm font-medium text-white flex items-center gap-2 mt-4"
         >
-          {isUpdatingIpWhitelist && (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          )}
+          {isUpdatingIpWhitelist && <Loader2 className="w-4 h-4 animate-spin" />}
           Save IP whitelist
         </button>
       </div>

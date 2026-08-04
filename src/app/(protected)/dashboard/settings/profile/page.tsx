@@ -3,21 +3,13 @@
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useUserStore, useBusinessStore } from "@/app/stores/store";
-<<<<<<< HEAD
-=======
 import { useAlert } from "../../../../lib/alert-context";
->>>>>>> temp-main
 
 function stripPhonePrefix(phone?: string) {
   if (!phone) return "";
   return phone.replace(/^\+?234/, "");
 }
 
-<<<<<<< HEAD
-type Feedback = { type: "success" | "error"; text: string } | null;
-
-=======
->>>>>>> temp-main
 function ConfirmModal({
   open,
   title,
@@ -74,11 +66,8 @@ function ConfirmModal({
 }
 
 export default function ProfilePage() {
-<<<<<<< HEAD
-=======
   const { showAlert } = useAlert();
 
->>>>>>> temp-main
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -87,24 +76,13 @@ export default function ProfilePage() {
   const [lastname, setLastname] = useState("");
   const [phone, setPhone] = useState("");
   const [profileSaving, setProfileSaving] = useState(false);
-<<<<<<< HEAD
-  const [profileMessage, setProfileMessage] = useState<Feedback>(null);
-=======
->>>>>>> temp-main
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordSaving, setPasswordSaving] = useState(false);
-<<<<<<< HEAD
-  const [passwordMessage, setPasswordMessage] = useState<Feedback>(null);
 
   const [deactivateModalOpen, setDeactivateModalOpen] = useState(false);
-  const [deactivateMessage, setDeactivateMessage] = useState<Feedback>(null);
-=======
-
-  const [deactivateModalOpen, setDeactivateModalOpen] = useState(false);
->>>>>>> temp-main
 
   const { user, hasFetched, fetchUser, updateProfile, updatePassword } =
     useUserStore();
@@ -131,70 +109,37 @@ export default function ProfilePage() {
   async function handleProfileSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setProfileSaving(true);
-<<<<<<< HEAD
-    setProfileMessage(null);
-=======
->>>>>>> temp-main
     const result = await updateProfile({
       firstname,
       lastname,
       phone: `+234${phone}`,
     });
     setProfileSaving(false);
-<<<<<<< HEAD
-    setProfileMessage({
-      type: result.success ? "success" : "error",
-      text:
-        result.message ??
-        (result.success ? "Profile updated" : "Failed to update profile"),
-    });
-=======
     showAlert(
       result.success ? "success" : "error",
       result.message ??
         (result.success ? "Profile updated" : "Failed to update profile"),
     );
->>>>>>> temp-main
   }
 
   async function handlePasswordSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-<<<<<<< HEAD
-      setPasswordMessage({
-        type: "error",
-        text: "New password and confirmation do not match",
-      });
-      return;
-    }
-    setPasswordSaving(true);
-    setPasswordMessage(null);
-=======
       showAlert("error", "New password and confirmation do not match");
       return;
     }
     setPasswordSaving(true);
->>>>>>> temp-main
     const result = await updatePassword({
       current_password: currentPassword,
       password: newPassword,
       password_confirmation: confirmPassword,
     });
     setPasswordSaving(false);
-<<<<<<< HEAD
-    setPasswordMessage({
-      type: result.success ? "success" : "error",
-      text:
-        result.message ??
-        (result.success ? "Password updated" : "Failed to update password"),
-    });
-=======
     showAlert(
       result.success ? "success" : "error",
       result.message ??
         (result.success ? "Password updated" : "Failed to update password"),
     );
->>>>>>> temp-main
     if (result.success) {
       setCurrentPassword("");
       setNewPassword("");
@@ -204,18 +149,6 @@ export default function ProfilePage() {
 
   async function handleConfirmDeactivate() {
     if (!selectedBusinessId) return;
-<<<<<<< HEAD
-    setDeactivateMessage(null);
-    const result = await deactivateBusiness(selectedBusinessId);
-    setDeactivateMessage({
-      type: result.success ? "success" : "error",
-      text:
-        result.message ??
-        (result.success
-          ? "Business deactivated"
-          : "Failed to deactivate business"),
-    });
-=======
     const result = await deactivateBusiness(selectedBusinessId);
     showAlert(
       result.success ? "success" : "error",
@@ -224,7 +157,6 @@ export default function ProfilePage() {
           ? "Business deactivated"
           : "Failed to deactivate business"),
     );
->>>>>>> temp-main
     if (result.success) {
       setDeactivateModalOpen(false);
     }
@@ -310,22 +242,6 @@ export default function ProfilePage() {
               />
             </div>
           </div>
-<<<<<<< HEAD
-          {profileMessage && (
-            <p
-              className="text-sm"
-              style={{
-                color:
-                  profileMessage.type === "success"
-                    ? "var(--brand)"
-                    : "var(--danger)",
-              }}
-            >
-              {profileMessage.text}
-            </p>
-          )}
-=======
->>>>>>> temp-main
           <div className="pt-2">
             <button
               type="submit"
@@ -454,22 +370,6 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-<<<<<<< HEAD
-          {passwordMessage && (
-            <p
-              className="text-sm"
-              style={{
-                color:
-                  passwordMessage.type === "success"
-                    ? "var(--brand)"
-                    : "var(--danger)",
-              }}
-            >
-              {passwordMessage.text}
-            </p>
-          )}
-=======
->>>>>>> temp-main
           <div className="pt-2">
             <button
               type="submit"
@@ -493,22 +393,6 @@ export default function ProfilePage() {
           This pauses your business. Your data isn't deleted, and you can
           reactivate by contacting support.
         </p>
-<<<<<<< HEAD
-        {deactivateMessage && (
-          <p
-            className="text-sm mb-3"
-            style={{
-              color:
-                deactivateMessage.type === "success"
-                  ? "var(--brand)"
-                  : "var(--danger)",
-            }}
-          >
-            {deactivateMessage.text}
-          </p>
-        )}
-=======
->>>>>>> temp-main
         <button
           type="button"
           onClick={() => setDeactivateModalOpen(true)}

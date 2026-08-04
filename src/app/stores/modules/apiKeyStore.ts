@@ -97,9 +97,12 @@ export const useApiKeyStore = create<ApiKeyState>()((set, get) => ({
   rotateApiKey: async (businessAltId) => {
     set({ isRotating: true, error: null });
     try {
-      const res = await api.post<RotateApiKeyResponse>("/business/api-keys/rotate", {
-        alt_id: businessAltId,
-      });
+      const res = await api.post<RotateApiKeyResponse>(
+        "/business/api-keys/rotate",
+        {
+          alt_id: businessAltId,
+        },
+      );
       if (res.data.success && res.data.data) {
         let updatedKey: ApiKey;
         set((state) => {
@@ -179,8 +182,7 @@ export const useApiKeyStore = create<ApiKeyState>()((set, get) => ({
       set({ isUpdatingIpWhitelist: false });
       return {
         success: false,
-        message:
-          err.response?.data?.message ?? "Failed to update IP whitelist",
+        message: err.response?.data?.message ?? "Failed to update IP whitelist",
       };
     }
   },

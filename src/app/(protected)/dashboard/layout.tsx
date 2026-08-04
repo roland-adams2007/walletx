@@ -60,10 +60,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { user, isLoading, hasFetched, fetchUser } = useUserStore();
   const {
     selectedBusinessId,
-<<<<<<< HEAD
-=======
     hasHydrated,
->>>>>>> temp-main
     businessDetails,
     setSelectedBusinessId,
     hydrateSelectedBusinessId,
@@ -98,14 +95,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     fetchBusinessDetails(selectedBusinessId);
   }, [selectedBusinessId, fetchBusinessDetails]);
 
-<<<<<<< HEAD
-  useEffect(() => {
-    if (!selectedBusinessId) return;
-    fetchBusinessDetails(selectedBusinessId);
-  }, [selectedBusinessId, fetchBusinessDetails]);
-
-=======
->>>>>>> temp-main
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
