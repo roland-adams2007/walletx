@@ -1,0 +1,17 @@
+.login-brand-panel {
+  position: relative;
+  background-image: url("/login_hero.png");
+  background-size: cover;
+  background-position: center;
+}
+
+.login-brand-panel-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(14, 32, 25, 0.75) 0%,
+    rgba(18, 53, 39, 0.55) 45%,
+    rgba(14, 32, 25, 0.9) 100%
+  );
+}

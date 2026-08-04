@@ -1,0 +1,10 @@
+.phone-prefix {
+  border: 1px solid var(--line);
+  background: var(--brand-softer);
+  color: var(--text);
+}
+
+.optional-tag {
+  color: var(--muted);
+  font-weight: 500;
+}

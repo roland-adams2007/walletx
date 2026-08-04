@@ -1,0 +1,61 @@
+:root {
+  --ink: #172420;
+  --paper: #f6f2e7;
+  --moss: #1f5c43;
+  --moss-dark: #123527;
+  --gold: #c89b3c;
+  --slate: #5c665f;
+  --line: #dcd4c0;
+}
+
+.landing-page {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", sans-serif;
+  scroll-behavior: smooth;
+}
+
+.landing-page a:focus-visible,
+.landing-page button:focus-visible {
+  outline: 2px solid var(--moss);
+  outline-offset: 3px;
+}
+
+.landing-page .ticker {
+  animation: ticker-scroll 10s linear infinite;
+}
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-page .ticker {
+    animation: none;
+  }
+}
+
+.landing-page .pulse-dot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}

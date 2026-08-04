@@ -1,0 +1,206 @@
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.danger-card {
+  background: #fff;
+  border: 1px solid var(--danger-soft);
+}
+
+.input-field:read-only {
+  background: var(--brand-softer);
+  color: var(--muted);
+}
+
+select.input-field {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2366766d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.25rem;
+}
+
+.field-error {
+  border-color: var(--danger) !important;
+}
+
+.btn-secondary {
+  background: var(--brand-softer);
+  color: var(--brand-dark);
+  border: 1px solid var(--line);
+  transition: background 0.15s ease;
+}
+.btn-secondary:hover {
+  background: var(--brand-soft);
+}
+
+.segment {
+  border: 1px solid var(--line);
+  background: var(--brand-softer);
+  display: inline-flex;
+  padding: 3px;
+}
+.segment input {
+  display: none;
+}
+.segment label {
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  color: var(--muted);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.segment input:checked + label {
+  background: #fff;
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switch-track {
+  position: absolute;
+  inset: 0;
+  background: var(--line);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.switch-track::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 9999px;
+  transition: transform 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.switch input:checked + .switch-track {
+  background: var(--brand);
+}
+.switch input:checked + .switch-track::before {
+  transform: translateX(16px);
+}
+
+.tab-btn {
+  padding: 0.7rem 0.15rem;
+  margin-right: 1.1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.tab-btn:hover {
+  color: var(--text);
+}
+.tab-btn.active {
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
+@media (min-width: 640px) {
+  .tab-btn {
+    padding: 0.85rem 0.25rem;
+    margin-right: 1.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.pill-verified {
+  background: var(--brand-soft);
+  color: var(--brand-dark);
+}
+.pill-pending {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+.pill-unverified {
+  background: #eef0ef;
+  color: var(--muted);
+}
+.pill-rejected {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.key-field {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 0.8125rem;
+  background: var(--brand-softer);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--brand-softer);
+  border: 1px solid var(--line);
+  padding: 0.3rem 0.5rem 0.3rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-family: var(--font-plex-mono), monospace;
+}
+.chip button {
+  color: var(--muted);
+  display: flex;
+}
+.chip button:hover {
+  color: var(--danger);
+}
+
+.custom-dropdown {
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.14);
+}
+.custom-option {
+  transition: background 0.12s ease;
+}
+.custom-option:hover {
+  background: var(--brand-softer);
+}
+.custom-option.selected {
+  color: var(--brand-dark);
+  font-weight: 600;
+}
