@@ -228,7 +228,7 @@ export default function CustomersPage() {
   function handleViewAllTransactions() {
     if (!activeCustomerId) return;
     window.location.href =
-      "/transactions?customer=" + encodeURIComponent(activeCustomerId);
+      "/dashboard/transactions?customer=" + encodeURIComponent(activeCustomerId);
   }
 
   function openAddModal() {

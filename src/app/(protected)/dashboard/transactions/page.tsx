@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Search,
   Filter,
@@ -14,221 +15,9 @@ import {
   Calendar,
 } from "lucide-react";
 import "./transaction.css";
+import { useTransactionStore, useBusinessStore } from "@/app/stores/store";
 
-type TxStatus = "success" | "failed" | "pending";
 type DateRangeOption = "all" | "today" | "week" | "month" | "custom";
-
-interface Transaction {
-  id: string;
-  amount: number;
-  status: TxStatus;
-  customerId: string;
-  customerName: string;
-  customerEmail: string;
-  reference: string;
-  channel: string;
-  type: string;
-  date: string;
-  dateISO: string;
-  narration: string;
-  authorization: string;
-  ip: string;
-}
-
-const transactions: Transaction[] = [
-  {
-    id: "t1",
-    amount: 5000,
-    status: "success",
-    customerId: "c1",
-    customerName: "",
-    customerEmail: "philipomeizamatthew@gmail.com",
-    reference: "TIX-UZ9NLE3CJBVNNA",
-    channel: "Card",
-    type: "Payment",
-    date: "Wed, Jul 29, 2026 12:42 PM",
-    dateISO: "2026-07-29T12:42:00",
-    narration: "Payment for order #4821",
-    authorization: "Visa •••• 4432",
-    ip: "197.210.54.12",
-  },
-  {
-    id: "t2",
-    amount: 200,
-    status: "success",
-    customerId: "c8",
-    customerName: "Rolly Adams",
-    customerEmail: "adamsrolly7@gmail.com",
-    reference: "TIX-MMRKD0QIOWOOBXY",
-    channel: "Bank Transfer",
-    type: "Payment",
-    date: "Tue, Jul 28, 2026 2:37 AM",
-    dateISO: "2026-07-28T02:37:00",
-    narration: "Wallet top-up",
-    authorization: "GTBank •••• 2210",
-    ip: "105.112.34.90",
-  },
-  {
-    id: "t3",
-    amount: 200,
-    status: "success",
-    customerId: "c8",
-    customerName: "Rolly Adams",
-    customerEmail: "adamsrolly7@gmail.com",
-    reference: "TIX-XJ9W7MISHUOEJICB",
-    channel: "Bank Transfer",
-    type: "Payment",
-    date: "Tue, Jul 28, 2026 1:18 AM",
-    dateISO: "2026-07-28T01:18:00",
-    narration: "Wallet top-up",
-    authorization: "GTBank •••• 2210",
-    ip: "105.112.34.90",
-  },
-  {
-    id: "t4",
-    amount: 5000,
-    status: "success",
-    customerId: "c1",
-    customerName: "",
-    customerEmail: "kolawolerofiata@gmail.com",
-    reference: "TIX-G7G6IZR86WHV4GFI",
-    channel: "Bank Transfer",
-    type: "Payment",
-    date: "Thu, Jul 23, 2026 2:22 PM",
-    dateISO: "2026-07-23T14:22:00",
-    narration: "Payment for order #4790",
-    authorization: "Access Bank •••• 8871",
-    ip: "102.89.23.45",
-  },
-  {
-    id: "t5",
-    amount: 5500,
-    status: "success",
-    customerId: "c2",
-    customerName: "Wale Williams",
-    customerEmail: "ww8615929@gmail.com",
-    reference: "TIX-KOW1NZZM2HKOI0",
-    channel: "Bank Transfer",
-    type: "Payment",
-    date: "Sat, Jul 18, 2026 2:21 AM",
-    dateISO: "2026-07-18T02:21:00",
-    narration: "Payment for order #4703",
-    authorization: "Zenith Bank •••• 6612",
-    ip: "197.210.88.201",
-  },
-  {
-    id: "t6",
-    amount: 5500,
-    status: "success",
-    customerId: "c3",
-    customerName: "Isyaka Nafisa",
-    customerEmail: "isyakanafisa8@gmail.com",
-    reference: "TIX-U18DK41CVNGEQX",
-    channel: "Bank Transfer",
-    type: "Payment",
-    date: "Sat, Jul 18, 2026 2:16 AM",
-    dateISO: "2026-07-18T02:16:00",
-    narration: "Payment for order #4702",
-    authorization: "UBA •••• 3390",
-    ip: "105.113.67.14",
-  },
-  {
-    id: "t7",
-    amount: 5500,
-    status: "success",
-    customerId: "c4",
-    customerName: "",
-    customerEmail: "mtanimu442@gmail.com",
-    reference: "TIX-B8ZOQQPGFGFOS",
-    channel: "Bank Transfer",
-    type: "Payment",
-    date: "Sat, Jul 18, 2026 2:09 AM",
-    dateISO: "2026-07-18T02:09:00",
-    narration: "Payment for order #4701",
-    authorization: "First Bank •••• 5528",
-    ip: "197.211.10.77",
-  },
-  {
-    id: "t8",
-    amount: 5500,
-    status: "success",
-    customerId: "c5",
-    customerName: "Jubril Egwudale",
-    customerEmail: "egwudalejubril@gmail.com",
-    reference: "TIX-6RMYIXZQDE9WN",
-    channel: "Bank Transfer",
-    type: "Payment",
-    date: "Sat, Jul 18, 2026 2:01 AM",
-    dateISO: "2026-07-18T02:01:00",
-    narration: "Payment for order #4700",
-    authorization: "Kuda Bank •••• 1145",
-    ip: "102.90.44.19",
-  },
-  {
-    id: "t9",
-    amount: 5500,
-    status: "failed",
-    customerId: "c9",
-    customerName: "Christopher Olowo",
-    customerEmail: "christopherolowo7@gmail.com",
-    reference: "TIX-EWLDDDVOM37PK",
-    channel: "Bank Transfer",
-    type: "Payment",
-    date: "Sat, Jul 18, 2026 1:59 AM",
-    dateISO: "2026-07-18T01:59:00",
-    narration: "Payment for order #4699",
-    authorization: "Declined — insufficient funds",
-    ip: "197.210.19.63",
-  },
-  {
-    id: "t10",
-    amount: 12000,
-    status: "success",
-    customerId: "c6",
-    customerName: "Azeez Adebayo",
-    customerEmail: "adebayoazeez026@gmail.com",
-    reference: "TIX-P3NQOX4GHTBWZL",
-    channel: "Card",
-    type: "Payment",
-    date: "Fri, Jul 17, 2026 6:14 PM",
-    dateISO: "2026-07-17T18:14:00",
-    narration: "Payment for order #4685",
-    authorization: "Mastercard •••• 7761",
-    ip: "105.119.203.5",
-  },
-  {
-    id: "t11",
-    amount: 8500,
-    status: "pending",
-    customerId: "c5",
-    customerName: "Jubril Egwudale",
-    customerEmail: "egwudalejubril@gmail.com",
-    reference: "TIX-A62LFRTVXMEWKD",
-    channel: "USSD",
-    type: "Payment",
-    date: "Fri, Jul 17, 2026 11:02 AM",
-    dateISO: "2026-07-17T11:02:00",
-    narration: "Awaiting confirmation",
-    authorization: "USSD *737#",
-    ip: "197.211.77.140",
-  },
-  {
-    id: "t12",
-    amount: 4000,
-    status: "success",
-    customerId: "c6",
-    customerName: "Azeez Adebayo",
-    customerEmail: "adebayoazeez026@gmail.com",
-    reference: "TIX-9YDKQZLMR2FVXO",
-    channel: "Card",
-    type: "Refund",
-    date: "Thu, Jul 16, 2026 3:45 PM",
-    dateISO: "2026-07-16T15:45:00",
-    narration: "Refund for order #4652",
-    authorization: "Mastercard •••• 7761",
-    ip: "105.119.203.5",
-  },
-];
 
 const dateOptions: { value: DateRangeOption; label: string }[] = [
   { value: "all", label: "All time" },
@@ -240,7 +29,7 @@ const dateOptions: { value: DateRangeOption; label: string }[] = [
 
 function formatNaira(amount: number) {
   return (
-    "₦" +
+    "NGN " +
     amount.toLocaleString("en-NG", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -248,31 +37,57 @@ function formatNaira(amount: number) {
   );
 }
 
-function statusPillClass(status: TxStatus) {
+function statusPillClass(status: string) {
   if (status === "success") return "pill-success";
   if (status === "failed") return "pill-failed";
   return "pill-pending";
 }
 
-function statusLabel(status: TxStatus) {
+function statusLabel(status: string) {
   if (status === "success") return "Successful";
   if (status === "failed") return "Failed";
   return "Pending";
 }
 
-export default function TransactionsPage() {
-  const [search, setSearch] = useState("");
+function formatDateDisplay(dateString: string) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
 
+export default function TransactionsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { selectedBusinessId } = useBusinessStore();
+  const {
+    transactions,
+    meta,
+    isLoading,
+    error,
+    currentTransaction,
+    isLoadingDetail,
+    fetchTransactions,
+    fetchTransactionByReference,
+    setFilters,
+    clearFilters,
+    clearCurrentTransaction,
+  } = useTransactionStore();
+
+  // Local state for UI
+  const [search, setSearch] = useState("");
   const [dateOpen, setDateOpen] = useState(false);
   const [dateRange, setDateRange] = useState<DateRangeOption>("all");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
-  const [appliedDateRange, setAppliedDateRange] = useState<{
-    type: DateRangeOption;
-    start: string;
-    end: string;
-  }>({ type: "all", start: "", end: "" });
-
   const [filterOpen, setFilterOpen] = useState(false);
   const [amountMinInput, setAmountMinInput] = useState("");
   const [amountMaxInput, setAmountMaxInput] = useState("");
@@ -280,28 +95,235 @@ export default function TransactionsPage() {
   const [typeInput, setTypeInput] = useState("all");
   const [channelInput, setChannelInput] = useState("all");
   const [statusInput, setStatusInput] = useState("all");
-  const [appliedFilters, setAppliedFilters] = useState({
-    amountMin: null as number | null,
-    amountMax: null as number | null,
-    customer: "",
-    type: "all",
-    channel: "all",
-    status: "all",
-  });
-
-  const [activeTxId, setActiveTxId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isInitialized, setIsInitialized] = useState(false);
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const filterRef = useRef<HTMLDivElement>(null);
   const filterBtnRef = useRef<HTMLButtonElement>(null);
   const dateRef = useRef<HTMLDivElement>(null);
   const dateBtnRef = useRef<HTMLButtonElement>(null);
-
   const [filterPanelStyle, setFilterPanelStyle] = useState<React.CSSProperties>(
     {},
   );
   const [datePanelStyle, setDatePanelStyle] = useState<React.CSSProperties>({});
 
+  // Get customer_id from URL
+  const customerIdFromUrl = searchParams.get("customer");
+
+  // Build filters from URL and local state
+  const buildFilters = useCallback(() => {
+    const filters: any = {};
+
+    if (search) filters.reference = search;
+    if (customerInput) filters.customer = customerInput;
+    if (amountMinInput) filters.min_amount = Number(amountMinInput);
+    if (amountMaxInput) filters.max_amount = Number(amountMaxInput);
+    if (typeInput !== "all") filters.transaction_type = typeInput;
+    if (channelInput !== "all") filters.channel = channelInput;
+    if (statusInput !== "all") filters.status = statusInput;
+
+    // Date filters
+    const dateType = dateRange;
+    if (dateType === "custom" && customStart && customEnd) {
+      filters.date_type = "custom";
+      filters.start_date = customStart;
+      filters.end_date = customEnd;
+    } else if (dateType !== "all") {
+      filters.date_type = dateType;
+    }
+
+    // Customer filter from URL
+    if (customerIdFromUrl) {
+      filters.cus_id = customerIdFromUrl;
+    }
+
+    return filters;
+  }, [
+    search,
+    customerInput,
+    amountMinInput,
+    amountMaxInput,
+    typeInput,
+    channelInput,
+    statusInput,
+    dateRange,
+    customStart,
+    customEnd,
+    customerIdFromUrl,
+  ]);
+
+  // Update URL with current filters (only if initialized)
+  const updateUrlParams = useCallback(() => {
+    if (!isInitialized) return;
+
+    const params = new URLSearchParams();
+    const currentFilters = buildFilters();
+
+    // Add all non-empty filters to URL
+    Object.entries(currentFilters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        params.set(key, String(value));
+      }
+    });
+
+    // Add pagination
+    if (currentPage > 1) {
+      params.set("page", String(currentPage));
+    }
+
+    // Remove customer if it's already in filters
+    if (customerIdFromUrl) {
+      params.set("customer", customerIdFromUrl);
+    }
+
+    const queryString = params.toString();
+    const newUrl = queryString
+      ? `/dashboard/transactions?${queryString}`
+      : "/dashboard/transactions";
+
+    // Only replace if the URL is different
+    const currentPath = window.location.pathname + window.location.search;
+    if (newUrl !== currentPath) {
+      router.replace(newUrl, { scroll: false });
+    }
+  }, [buildFilters, currentPage, customerIdFromUrl, router, isInitialized]);
+
+  // Fetch transactions when filters change
+  useEffect(() => {
+    if (!selectedBusinessId || !isInitialized) return;
+
+    const fetchData = async () => {
+      const filterParams = buildFilters();
+      await fetchTransactions(currentPage, selectedBusinessId, filterParams);
+    };
+
+    fetchData();
+  }, [
+    selectedBusinessId,
+    currentPage,
+    buildFilters,
+    fetchTransactions,
+    customerIdFromUrl,
+    isInitialized,
+  ]);
+
+  // Initialize from URL params on mount
+  useEffect(() => {
+    const params = searchParams;
+
+    // Set filters from URL
+    let hasFilters = false;
+
+    const reference = params.get("reference");
+    if (reference) {
+      setSearch(reference);
+      hasFilters = true;
+    }
+
+    const customer = params.get("customer");
+    if (customer) {
+      setCustomerInput(customer);
+      hasFilters = true;
+    }
+
+    const minAmount = params.get("min_amount");
+    if (minAmount) {
+      setAmountMinInput(minAmount);
+      hasFilters = true;
+    }
+
+    const maxAmount = params.get("max_amount");
+    if (maxAmount) {
+      setAmountMaxInput(maxAmount);
+      hasFilters = true;
+    }
+
+    const type = params.get("transaction_type");
+    if (type) {
+      setTypeInput(type);
+      hasFilters = true;
+    }
+
+    const channel = params.get("channel");
+    if (channel) {
+      setChannelInput(channel);
+      hasFilters = true;
+    }
+
+    const status = params.get("status");
+    if (status) {
+      setStatusInput(status);
+      hasFilters = true;
+    }
+
+    const dateType = params.get("date_type");
+    if (dateType && dateType !== "all") {
+      setDateRange(dateType as DateRangeOption);
+      if (dateType === "custom") {
+        const start = params.get("start_date");
+        const end = params.get("end_date");
+        if (start) setCustomStart(start);
+        if (end) setCustomEnd(end);
+      }
+      hasFilters = true;
+    }
+
+    const page = params.get("page");
+    if (page) {
+      setCurrentPage(Number(page));
+    }
+
+    // Set customer from URL if present
+    if (customerIdFromUrl) {
+      setCustomerInput(customerIdFromUrl);
+    }
+
+    // Mark as initialized
+    setIsInitialized(true);
+  }, [searchParams, customerIdFromUrl]);
+
+  // Update URL when filters change (only after initialization)
+  useEffect(() => {
+    if (isInitialized) {
+      updateUrlParams();
+    }
+  }, [
+    search,
+    customerInput,
+    amountMinInput,
+    amountMaxInput,
+    typeInput,
+    channelInput,
+    statusInput,
+    dateRange,
+    customStart,
+    customEnd,
+    currentPage,
+    isInitialized,
+    updateUrlParams,
+  ]);
+
+  // Handle search with debounce
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setCurrentPage(1);
+    }, 600);
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [search, isInitialized]);
+
+  // Clamp panel functions
   function clampPanelToViewport(
     btnRef: React.RefObject<HTMLElement>,
     panelRef: React.RefObject<HTMLElement>,
@@ -362,124 +384,24 @@ export default function TransactionsPage() {
   function selectDateOption(option: DateRangeOption) {
     setDateRange(option);
     if (option !== "custom") {
-      setAppliedDateRange({ type: option, start: "", end: "" });
       setDateOpen(false);
     }
   }
 
   function applyCustomDate() {
-    setAppliedDateRange({ type: "custom", start: customStart, end: customEnd });
     setDateOpen(false);
   }
 
-  function isWithinDateRange(dateISO: string) {
-    const txDate = new Date(dateISO);
-    const now = new Date();
-
-    if (appliedDateRange.type === "all") return true;
-
-    if (appliedDateRange.type === "today") {
-      return (
-        txDate.getFullYear() === now.getFullYear() &&
-        txDate.getMonth() === now.getMonth() &&
-        txDate.getDate() === now.getDate()
-      );
-    }
-
-    if (appliedDateRange.type === "week") {
-      const weekAgo = new Date(now);
-      weekAgo.setDate(now.getDate() - 7);
-      return txDate >= weekAgo && txDate <= now;
-    }
-
-    if (appliedDateRange.type === "month") {
-      return (
-        txDate.getFullYear() === now.getFullYear() &&
-        txDate.getMonth() === now.getMonth()
-      );
-    }
-
-    if (appliedDateRange.type === "custom") {
-      if (!appliedDateRange.start && !appliedDateRange.end) return true;
-      const start = appliedDateRange.start
-        ? new Date(appliedDateRange.start)
-        : null;
-      const end = appliedDateRange.end
-        ? new Date(appliedDateRange.end + "T23:59:59")
-        : null;
-      if (start && txDate < start) return false;
-      if (end && txDate > end) return false;
-      return true;
-    }
-
-    return true;
-  }
-
-  const filteredTransactions = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return transactions.filter((t) => {
-      if (q && !t.reference.toLowerCase().includes(q)) return false;
-      if (!isWithinDateRange(t.dateISO)) return false;
-      if (
-        appliedFilters.amountMin !== null &&
-        t.amount < appliedFilters.amountMin
-      )
-        return false;
-      if (
-        appliedFilters.amountMax !== null &&
-        t.amount > appliedFilters.amountMax
-      )
-        return false;
-      if (appliedFilters.customer) {
-        const c = appliedFilters.customer.toLowerCase();
-        if (
-          !t.customerId.toLowerCase().includes(c) &&
-          !t.customerEmail.toLowerCase().includes(c)
-        )
-          return false;
-      }
-      if (appliedFilters.type !== "all" && t.type !== appliedFilters.type)
-        return false;
-      if (
-        appliedFilters.channel !== "all" &&
-        t.channel !== appliedFilters.channel
-      )
-        return false;
-      if (appliedFilters.status !== "all" && t.status !== appliedFilters.status)
-        return false;
-      return true;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, appliedFilters, appliedDateRange]);
-
-  const activeTx = useMemo(
-    () => transactions.find((t) => t.id === activeTxId) || null,
-    [activeTxId],
-  );
-
   const activeFilterCount =
-    (appliedFilters.amountMin !== null ? 1 : 0) +
-    (appliedFilters.amountMax !== null ? 1 : 0) +
-    (appliedFilters.customer ? 1 : 0) +
-    (appliedFilters.type !== "all" ? 1 : 0) +
-    (appliedFilters.channel !== "all" ? 1 : 0) +
-    (appliedFilters.status !== "all" ? 1 : 0);
+    (amountMinInput ? 1 : 0) +
+    (amountMaxInput ? 1 : 0) +
+    (customerInput ? 1 : 0) +
+    (typeInput !== "all" ? 1 : 0) +
+    (channelInput !== "all" ? 1 : 0) +
+    (statusInput !== "all" ? 1 : 0);
 
   const activeDateLabel =
-    dateOptions.find((d) => d.value === appliedDateRange.type)?.label ??
-    "All time";
-
-  function applyFilters() {
-    setAppliedFilters({
-      amountMin: amountMinInput !== "" ? Number(amountMinInput) : null,
-      amountMax: amountMaxInput !== "" ? Number(amountMaxInput) : null,
-      customer: customerInput.trim(),
-      type: typeInput,
-      channel: channelInput,
-      status: statusInput,
-    });
-    setFilterOpen(false);
-  }
+    dateOptions.find((d) => d.value === dateRange)?.label ?? "All time";
 
   function resetFilters() {
     setAmountMinInput("");
@@ -488,34 +410,37 @@ export default function TransactionsPage() {
     setTypeInput("all");
     setChannelInput("all");
     setStatusInput("all");
-    setAppliedFilters({
-      amountMin: null,
-      amountMax: null,
-      customer: "",
-      type: "all",
-      channel: "all",
-      status: "all",
-    });
+    setDateRange("all");
+    setCustomStart("");
+    setCustomEnd("");
+    setSearch("");
+    setCurrentPage(1);
+    clearFilters();
   }
 
-  function openPanel(id: string) {
-    setActiveTxId(id);
+  function goToPage(page: number) {
+    setCurrentPage(page);
   }
 
-  function closePanel() {
-    setActiveTxId(null);
-    setCopied(false);
-  }
-
-  async function copyReference() {
-    if (!activeTx) return;
+  async function copyReference(reference: string) {
     try {
-      await navigator.clipboard.writeText(activeTx.reference);
+      await navigator.clipboard.writeText(reference);
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
     } catch (err) {
       console.error("Copy failed:", err);
     }
+  }
+
+  // Handle row click to show transaction details
+  function handleRowClick(reference: string) {
+    fetchTransactionByReference(reference);
+  }
+
+  // Close detail panel
+  function closePanel() {
+    clearCurrentTransaction();
+    setCopied(false);
   }
 
   return (
@@ -596,7 +521,7 @@ export default function TransactionsPage() {
                     onClick={applyCustomDate}
                     className="btn-primary w-full px-4 py-2.5 rounded-lg text-sm font-medium text-white"
                   >
-                    Filter
+                    Apply
                   </button>
                 </div>
               )}
@@ -678,8 +603,8 @@ export default function TransactionsPage() {
                     className="select-field w-full px-3.5 py-2 rounded-lg text-sm"
                   >
                     <option value="all">All types</option>
-                    <option value="Payment">Payment</option>
-                    <option value="Refund">Refund</option>
+                    <option value="payment">Payment</option>
+                    <option value="refund">Refund</option>
                   </select>
                 </div>
                 <div>
@@ -692,9 +617,9 @@ export default function TransactionsPage() {
                     className="select-field w-full px-3.5 py-2 rounded-lg text-sm"
                   >
                     <option value="all">All channels</option>
-                    <option value="Card">Card</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="USSD">USSD</option>
+                    <option value="card">Card</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="ussd">USSD</option>
                   </select>
                 </div>
                 <div>
@@ -715,10 +640,12 @@ export default function TransactionsPage() {
               </div>
               <div className="flex items-center gap-3 mt-5">
                 <button
-                  onClick={applyFilters}
+                  onClick={() => {
+                    setFilterOpen(false);
+                  }}
                   className="btn-primary flex-1 px-4 py-2.5 rounded-lg text-sm font-medium text-white"
                 >
-                  Filter
+                  Apply
                 </button>
                 <button
                   onClick={resetFilters}
@@ -746,36 +673,53 @@ export default function TransactionsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredTransactions.map((t) => (
-                <tr key={t.id} onClick={() => openPanel(t.id)}>
-                  <td>
-                    <span
-                      className={`status-dot ${
-                        t.status === "success"
-                          ? ""
-                          : t.status === "failed"
-                            ? "is-failed"
-                            : "is-pending"
-                      }`}
-                    ></span>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-8 text-muted">
+                    Loading transactions...
                   </td>
-                  <td className="font-mono font-medium">
-                    {formatNaira(t.amount)}
-                  </td>
-                  <td>{t.customerEmail}</td>
-                  <td className="font-mono text-muted">{t.reference}</td>
-                  <td>
-                    <span className="channel-pill">{t.channel}</span>
-                  </td>
-                  <td className="text-muted">{t.date}</td>
                 </tr>
-              ))}
+              ) : transactions.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-8 text-muted">
+                    No transactions found
+                  </td>
+                </tr>
+              ) : (
+                transactions.map((t) => (
+                  <tr
+                    key={t.reference}
+                    onClick={() => handleRowClick(t.reference)}
+                  >
+                    <td>
+                      <span
+                        className={`status-dot ${
+                          t.status === "success"
+                            ? ""
+                            : t.status === "failed"
+                              ? "is-failed"
+                              : "is-pending"
+                        }`}
+                      ></span>
+                    </td>
+                    <td className="font-mono font-medium">
+                      {formatNaira(t.amount || 0)}
+                    </td>
+                    <td>{t.customer_email}</td>
+                    <td className="font-mono text-muted">{t.reference}</td>
+                    <td>
+                      <span className="channel-pill">{t.channel}</span>
+                    </td>
+                    <td className="text-muted">{formatDateDisplay(t.date)}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
         <div
           className={`empty-state flex-col items-center justify-center py-16 gap-2 ${
-            filteredTransactions.length === 0 ? "show" : ""
+            !isLoading && transactions.length === 0 ? "show" : ""
           }`}
         >
           <SearchX className="w-8 h-8 text-muted" />
@@ -784,18 +728,52 @@ export default function TransactionsPage() {
             Try a different reference or filter
           </p>
         </div>
+        {meta && meta.last_page > 1 && (
+          <div
+            className="flex items-center justify-between px-5 py-4"
+            style={{ borderTop: "1px solid var(--line)" }}
+          >
+            <p className="text-xs text-muted">
+              Page {meta.current_page} of {meta.last_page} ({meta.total}{" "}
+              transactions)
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={meta.current_page <= 1}
+                onClick={() => goToPage(meta.current_page - 1)}
+                className="btn-secondary px-4 py-2 rounded-lg text-sm font-medium"
+                style={{ opacity: meta.current_page <= 1 ? 0.5 : 1 }}
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                disabled={meta.current_page >= meta.last_page}
+                onClick={() => goToPage(meta.current_page + 1)}
+                className="btn-secondary px-4 py-2 rounded-lg text-sm font-medium"
+                style={{
+                  opacity: meta.current_page >= meta.last_page ? 0.5 : 1,
+                }}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* Transaction Detail Side Panel */}
       <div
-        className={`overlay fixed inset-0 ${activeTx ? "show" : ""}`}
+        className={`overlay fixed inset-0 ${currentTransaction ? "show" : ""}`}
         onClick={closePanel}
       ></div>
       <aside
         className={`side-panel fixed top-0 right-0 h-full overflow-y-auto ${
-          activeTx ? "open" : ""
+          currentTransaction ? "open" : ""
         }`}
       >
-        {activeTx && (
+        {currentTransaction && (
           <>
             <div
               className="flex items-center justify-between px-6 py-5"
@@ -812,90 +790,205 @@ export default function TransactionsPage() {
               </button>
             </div>
 
-            <div className="px-6 py-6 space-y-6">
-              <div className="card rounded-2xl p-5 text-center">
-                <p className="text-xs mb-1.5 text-muted">Amount</p>
-                <p className="font-mono text-2xl font-semibold mb-3">
-                  {formatNaira(activeTx.amount)}
+            {isLoadingDetail ? (
+              <div className="px-6 py-6">
+                <p className="text-sm text-muted">
+                  Loading transaction details...
                 </p>
-                <span className={`pill ${statusPillClass(activeTx.status)}`}>
-                  {statusLabel(activeTx.status)}
-                </span>
               </div>
+            ) : (
+              <div className="px-6 py-6 space-y-6">
+                <div className="card rounded-2xl p-5 text-center">
+                  <p className="text-xs mb-1.5 text-muted">Amount</p>
+                  <p className="font-mono text-2xl font-semibold mb-3">
+                    {formatNaira(currentTransaction.amount)}
+                  </p>
+                  <span
+                    className={`pill ${statusPillClass(currentTransaction.status)}`}
+                  >
+                    {statusLabel(currentTransaction.status)}
+                  </span>
+                </div>
 
-              <div>
-                <div className="detail-row">
-                  <span className="detail-label">Reference</span>
-                  <span className="flex items-center gap-1.5">
+                <div>
+                  <div className="detail-row">
+                    <span className="detail-label">Reference</span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="detail-value font-mono">
+                        {currentTransaction.reference}
+                      </span>
+                      <button
+                        onClick={() =>
+                          copyReference(currentTransaction.reference)
+                        }
+                        className="copy-btn w-6 h-6 rounded flex items-center justify-center shrink-0"
+                        aria-label="Copy reference"
+                      >
+                        {copied ? (
+                          <Check className="w-3.5 h-3.5" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Channel</span>
+                    <span className="detail-value">
+                      {currentTransaction.channel}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Transaction type</span>
+                    <span className="detail-value">
+                      {currentTransaction.transaction_type}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Date</span>
+                    <span className="detail-value">
+                      {currentTransaction.date
+                        ? formatDateDisplay(currentTransaction.date)
+                        : "-"}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Paid at</span>
+                    <span className="detail-value">
+                      {currentTransaction.paid_at
+                        ? formatDateDisplay(currentTransaction.paid_at)
+                        : "-"}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Narration</span>
+                    <span className="detail-value" style={{ maxWidth: 220 }}>
+                      {currentTransaction.narration || "-"}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Fee</span>
+                    <span className="detail-value">
+                      {formatNaira(currentTransaction.fee)}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Net amount</span>
+                    <span className="detail-value">
+                      {formatNaira(currentTransaction.net_amount)}
+                    </span>
+                  </div>
+                </div>
+
+                {currentTransaction.customer && (
+                  <div>
+                    <h4 className="font-semibold text-sm mb-2">Customer</h4>
+                    <Link
+                      href={`/dashboard/customers?customer=${encodeURIComponent(currentTransaction.customer.cus_id)}`}
+                      className="card customer-link flex items-center justify-between gap-3 rounded-xl p-4"
+                    >
+                      <span className="min-w-0">
+                        <span
+                          className="block text-sm font-medium truncate"
+                          style={{ color: "var(--text)" }}
+                        >
+                          {currentTransaction.customer.name || "No name"}
+                        </span>
+                        <span className="block text-xs text-muted truncate">
+                          {currentTransaction.customer.email}
+                        </span>
+                      </span>
+                      <ChevronRight className="w-4 h-4 shrink-0" />
+                    </Link>
+                  </div>
+                )}
+
+                <div>
+                  <h4 className="font-semibold text-sm mb-2">Authorization</h4>
+                  <div className="detail-row">
+                    <span className="detail-label">IP address</span>
                     <span className="detail-value font-mono">
-                      {activeTx.reference}
+                      {currentTransaction.ip_address || "-"}
                     </span>
-                    <button
-                      onClick={copyReference}
-                      className="copy-btn w-6 h-6 rounded flex items-center justify-center shrink-0"
-                      aria-label="Copy reference"
-                    >
-                      {copied ? (
-                        <Check className="w-3.5 h-3.5" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                  </span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Channel</span>
-                  <span className="detail-value">{activeTx.channel}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Transaction type</span>
-                  <span className="detail-value">{activeTx.type}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Date</span>
-                  <span className="detail-value">{activeTx.date}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Narration</span>
-                  <span className="detail-value" style={{ maxWidth: 220 }}>
-                    {activeTx.narration}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-sm mb-2">Customer</h4>
-                <Link
-                  href={`/customers?customer=${encodeURIComponent(activeTx.customerId)}`}
-                  className="card customer-link flex items-center justify-between gap-3 rounded-xl p-4"
-                >
-                  <span className="min-w-0">
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Device</span>
+                    <span className="detail-value">
+                      {currentTransaction.device || "-"}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">User agent</span>
                     <span
-                      className="block text-sm font-medium truncate"
-                      style={{ color: "var(--text)" }}
+                      className="detail-value"
+                      style={{ maxWidth: 200, fontSize: "0.75rem" }}
                     >
-                      {activeTx.customerName.trim() || "No name"}
+                      {currentTransaction.user_agent || "-"}
                     </span>
-                    <span className="block text-xs text-muted truncate">
-                      {activeTx.customerEmail}
-                    </span>
-                  </span>
-                  <ChevronRight className="w-4 h-4 shrink-0" />
-                </Link>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-sm mb-2">Authorization</h4>
-                <div className="detail-row">
-                  <span className="detail-label">Authorization</span>
-                  <span className="detail-value">{activeTx.authorization}</span>
+                  </div>
+                  {currentTransaction.gateway_response && (
+                    <div className="detail-row">
+                      <span className="detail-label">Gateway response</span>
+                      <span className="detail-value">
+                        {currentTransaction.gateway_response}
+                      </span>
+                    </div>
+                  )}
+                  {currentTransaction.authorization && (
+                    <div
+                      className="detail-row"
+                      style={{
+                        flexDirection: "column",
+                        alignItems: "flex-start",
+                        gap: "0.5rem",
+                      }}
+                    >
+                      <span className="detail-label">Authorization</span>
+                      <pre
+                        className="w-full text-xs"
+                        style={{
+                          background: "var(--brand-softer)",
+                          padding: "0.75rem",
+                          borderRadius: "0.5rem",
+                          overflow: "auto",
+                          maxHeight: "200px",
+                        }}
+                      >
+                        {JSON.stringify(
+                          currentTransaction.authorization,
+                          null,
+                          2,
+                        )}
+                      </pre>
+                    </div>
+                  )}
+                  {currentTransaction.meta && (
+                    <div
+                      className="detail-row"
+                      style={{
+                        flexDirection: "column",
+                        alignItems: "flex-start",
+                        gap: "0.5rem",
+                      }}
+                    >
+                      <span className="detail-label">Meta data</span>
+                      <pre
+                        className="w-full text-xs"
+                        style={{
+                          background: "var(--brand-softer)",
+                          padding: "0.75rem",
+                          borderRadius: "0.5rem",
+                          overflow: "auto",
+                          maxHeight: "200px",
+                        }}
+                      >
+                        {JSON.stringify(currentTransaction.meta, null, 2)}
+                      </pre>
+                    </div>
+                  )}
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">IP address</span>
-                  <span className="detail-value font-mono">{activeTx.ip}</span>
-                </div>
               </div>
-            </div>
+            )}
           </>
         )}
       </aside>

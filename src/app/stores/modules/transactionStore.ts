@@ -9,6 +9,32 @@ export type TransactionListItem = {
   date: string;
 };
 
+export type TransactionDetail = {
+  reference: string;
+  amount: number;
+  fee: number;
+  net_amount: number;
+  channel: string;
+  transaction_type: string;
+  status: string;
+  date: string | null;
+  paid_at: string | null;
+  narration: string | null;
+  customer: {
+    name: string;
+    email: string;
+    cus_id: string;
+  } | null;
+  authorization: any;
+  ip_address: string | null;
+  device: string | null;
+  user_agent: string | null;
+  balance_before: number | null;
+  balance_after: number | null;
+  gateway_response: string | null;
+  meta: any;
+};
+
 type PaginationMeta = {
   current_page: number;
   per_page: number;
@@ -21,6 +47,12 @@ type GetTransactionsResponse = {
   message: string;
   data: TransactionListItem[];
   meta: PaginationMeta;
+};
+
+type GetTransactionResponse = {
+  success: boolean;
+  message: string;
+  data: TransactionDetail;
 };
 
 export type TransactionFilters = {
@@ -38,22 +70,33 @@ export type TransactionFilters = {
 };
 
 type TransactionState = {
+  // List state
   transactions: TransactionListItem[];
   meta: PaginationMeta | null;
   isLoading: boolean;
   error: string | null;
-
   filters: TransactionFilters;
 
+  // Detail state
+  currentTransaction: TransactionDetail | null;
+  isLoadingDetail: boolean;
+  detailError: string | null;
+
+  // Actions
   fetchTransactions: (
     page?: number,
     businessId?: string | null,
     filters?: TransactionFilters,
   ) => Promise<void>;
 
+  fetchTransactionByReference: (
+    reference: string,
+  ) => Promise<TransactionDetail | null>;
+
   setFilters: (filters: TransactionFilters) => void;
   clearFilters: () => void;
   clearTransactions: () => void;
+  clearCurrentTransaction: () => void;
 };
 
 function pruneEmpty(filters: TransactionFilters) {
@@ -65,12 +108,17 @@ function pruneEmpty(filters: TransactionFilters) {
 }
 
 export const useTransactionStore = create<TransactionState>()((set, get) => ({
+  // List state
   transactions: [],
   meta: null,
   isLoading: false,
   error: null,
-
   filters: {},
+
+  // Detail state
+  currentTransaction: null,
+  isLoadingDetail: false,
+  detailError: null,
 
   fetchTransactions: async (page = 1, businessId, filters) => {
     set({ isLoading: true, error: null });
@@ -106,6 +154,38 @@ export const useTransactionStore = create<TransactionState>()((set, get) => ({
     }
   },
 
+  fetchTransactionByReference: async (reference: string) => {
+    set({ isLoadingDetail: true, detailError: null });
+
+    try {
+      const res = await api.get<GetTransactionResponse>(
+        `/transactions/${reference}`,
+      );
+
+      if (res.data.success) {
+        set({
+          currentTransaction: res.data.data,
+          isLoadingDetail: false,
+        });
+        return res.data.data;
+      } else {
+        set({
+          isLoadingDetail: false,
+          detailError: "Failed to fetch transaction details",
+        });
+        return null;
+      }
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.message ?? "Failed to load transaction details";
+      set({
+        detailError: errorMessage,
+        isLoadingDetail: false,
+      });
+      return null;
+    }
+  },
+
   setFilters: (filters) => set({ filters }),
 
   clearFilters: () => set({ filters: {} }),
@@ -116,5 +196,12 @@ export const useTransactionStore = create<TransactionState>()((set, get) => ({
       meta: null,
       error: null,
       filters: {},
+    }),
+
+  clearCurrentTransaction: () =>
+    set({
+      currentTransaction: null,
+      detailError: null,
+      isLoadingDetail: false,
     }),
 }));
