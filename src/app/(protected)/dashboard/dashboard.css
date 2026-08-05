@@ -7,6 +7,10 @@
   background: var(--sidebar);
 }
 
+.dashboard-header {
+  background: var(--bg, #fff);
+}
+
 .dashboard-sidebar .nav-link {
   color: var(--sidebar-muted);
   transition:

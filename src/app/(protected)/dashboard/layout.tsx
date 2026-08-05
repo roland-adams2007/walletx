@@ -129,7 +129,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         />
       )}
       <aside
-        className={`dashboard-sidebar w-64 shrink-0 py-6 fixed inset-y-0 left-0 z-40 transform transition-transform duration-200 ease-in-out lg:static lg:transform-none lg:z-auto ${
+        className={`dashboard-sidebar w-64 shrink-0 py-6 fixed inset-y-0 left-0 z-40 overflow-y-auto transform transition-transform duration-200 ease-in-out ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
       >
@@ -207,8 +207,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           })}
         </nav>
       </aside>
-      <div className="flex-1 min-w-0">
-        <header className="flex items-center justify-between gap-4 px-6 lg:px-10 py-5 border-b border-line">
+      <div className="flex-1 min-w-0 lg:ml-64">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-6 lg:px-10 py-5 border-b border-line dashboard-header">
           <div className="flex items-center gap-3">
             <button
               className="lg:hidden w-9 h-9 rounded-full flex items-center justify-center border border-line shrink-0"

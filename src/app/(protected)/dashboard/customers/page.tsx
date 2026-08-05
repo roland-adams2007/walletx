@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Search,
   Plus,
@@ -10,132 +10,20 @@ import {
   ChevronRight,
   SearchX,
 } from "lucide-react";
+import { useCustomerStore, useBusinessStore } from "@/app/stores/store";
+import { useAlert } from "../../../lib/alert-context";
 import "./customer.css";
 
-type Transaction = {
-  price: number;
-  channel: string;
-  date: string;
-};
-
-type Customer = {
-  id: string;
-  email: string;
-  firstname: string;
-  lastname: string;
-  phone: string;
-  addedOn: string;
-  totalTx: number;
-  successfulTx: number;
-  totalSpent: number;
-  transactions: Transaction[];
-};
-
-const initialCustomers: Customer[] = [
-  {
-    id: "c1",
-    email: "kolawolerofiata@gmail.com",
-    firstname: "",
-    lastname: "",
-    phone: "",
-    addedOn: "Jul 23, 2026",
-    totalTx: 12,
-    successfulTx: 11,
-    totalSpent: 184500,
-    transactions: [
-      { price: 12500, channel: "Card", date: "Jul 22, 2026" },
-      { price: 8000, channel: "Bank Transfer", date: "Jul 19, 2026" },
-      { price: 45000, channel: "Card", date: "Jul 15, 2026" },
-      { price: 6200, channel: "USSD", date: "Jul 10, 2026" },
-      { price: 30000, channel: "Card", date: "Jul 4, 2026" },
-    ],
-  },
-  {
-    id: "c2",
-    email: "ww8615929@gmail.com",
-    firstname: "Wale",
-    lastname: "Williams",
-    phone: "8031234567",
-    addedOn: "Jul 18, 2026",
-    totalTx: 5,
-    successfulTx: 5,
-    totalSpent: 62000,
-    transactions: [
-      { price: 22000, channel: "Card", date: "Jul 17, 2026" },
-      { price: 15000, channel: "Bank Transfer", date: "Jul 14, 2026" },
-      { price: 25000, channel: "Card", date: "Jul 9, 2026" },
-    ],
-  },
-  {
-    id: "c3",
-    email: "isyakanafisa8@gmail.com",
-    firstname: "Isyaka",
-    lastname: "Nafisa",
-    phone: "8123456789",
-    addedOn: "Jul 18, 2026",
-    totalTx: 3,
-    successfulTx: 2,
-    totalSpent: 18000,
-    transactions: [
-      { price: 9000, channel: "USSD", date: "Jul 16, 2026" },
-      { price: 9000, channel: "Card", date: "Jul 12, 2026" },
-    ],
-  },
-  {
-    id: "c4",
-    email: "mtanimu442@gmail.com",
-    firstname: "",
-    lastname: "",
-    phone: "",
-    addedOn: "Jul 18, 2026",
-    totalTx: 0,
-    successfulTx: 0,
-    totalSpent: 0,
-    transactions: [],
-  },
-  {
-    id: "c5",
-    email: "egwudalejubril@gmail.com",
-    firstname: "Jubril",
-    lastname: "Egwudale",
-    phone: "9021234567",
-    addedOn: "Jul 18, 2026",
-    totalTx: 8,
-    successfulTx: 7,
-    totalSpent: 96500,
-    transactions: [
-      { price: 12000, channel: "Card", date: "Jul 17, 2026" },
-      { price: 8500, channel: "Bank Transfer", date: "Jul 15, 2026" },
-      { price: 20000, channel: "Card", date: "Jul 11, 2026" },
-      { price: 6000, channel: "USSD", date: "Jul 8, 2026" },
-      { price: 15000, channel: "Card", date: "Jul 2, 2026" },
-    ],
-  },
-  {
-    id: "c6",
-    email: "adebayoazeez026@gmail.com",
-    firstname: "Azeez",
-    lastname: "Adebayo",
-    phone: "8091234567",
-    addedOn: "Jul 18, 2026",
-    totalTx: 1,
-    successfulTx: 1,
-    totalSpent: 4000,
-    transactions: [{ price: 4000, channel: "Card", date: "Jul 17, 2026" }],
-  },
-  {
-    id: "c7",
-    email: "juniorjohnson457@gmail.com",
-    firstname: "",
-    lastname: "",
-    phone: "",
-    addedOn: "Jul 18, 2026",
-    totalTx: 0,
-    successfulTx: 0,
-    totalSpent: 0,
-    transactions: [],
-  },
-];
+function formatDate(value: string) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
 function formatNaira(amount: number) {
   return (
@@ -147,8 +35,84 @@ function formatNaira(amount: number) {
   );
 }
 
+function splitName(name: string | null | undefined) {
+  if (!name || typeof name !== "string") {
+    return { firstname: "", lastname: "" };
+  }
+
+  const trimmed = name.trim();
+  if (!trimmed) {
+    return { firstname: "", lastname: "" };
+  }
+
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  const firstname = parts[0] ?? "";
+  const lastname = parts.slice(1).join(" ");
+
+  return { firstname, lastname };
+}
+
+function stripPhonePrefix(phone?: string | null) {
+  if (!phone) return "";
+  return phone.replace(/^\+?234/, "");
+}
+
+function displayPhone(phone?: string | null) {
+  const stripped = stripPhonePrefix(phone);
+  return stripped ? `+234 ${stripped}` : "";
+}
+
+function Switch({
+  checked,
+  disabled,
+  onChange,
+}: {
+  checked: boolean;
+  disabled?: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={onChange}
+      className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+      style={{
+        background: checked ? "var(--danger)" : "var(--line)",
+        opacity: disabled ? 0.6 : 1,
+        cursor: disabled ? "not-allowed" : "pointer",
+      }}
+    >
+      <span
+        className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+        style={{ transform: checked ? "translateX(22px)" : "translateX(4px)" }}
+      />
+    </button>
+  );
+}
+
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const { showAlert } = useAlert();
+  const { selectedBusinessId } = useBusinessStore();
+  const {
+    customers,
+    meta,
+    isLoading,
+    selectedCustomer,
+    isLoadingDetails,
+    isCreating,
+    isUpdating,
+    isTogglingBlacklist,
+    fetchCustomers,
+    fetchCustomer,
+    createCustomer,
+    updateCustomer,
+    toggleBlacklist,
+    clearSelectedCustomer,
+  } = useCustomerStore();
+
   const [search, setSearch] = useState("");
   const [activeCustomerId, setActiveCustomerId] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -164,49 +128,96 @@ export default function CustomersPage() {
   const [addEmail, setAddEmail] = useState("");
   const [addPhone, setAddPhone] = useState("");
 
-  const activeCustomer =
-    customers.find((c) => c.id === activeCustomerId) || null;
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const filteredCustomers = customers.filter((c) =>
-    c.email.toLowerCase().includes(search.trim().toLowerCase()),
-  );
+  useEffect(() => {
+    if (!selectedBusinessId) return;
+    fetchCustomers(1, "", selectedBusinessId);
+  }, [selectedBusinessId]);
 
-  function openPanel(customer: Customer) {
-    setActiveCustomerId(customer.id);
-    setEditFirstname(customer.firstname);
-    setEditLastname(customer.lastname);
-    setEditPhone(customer.phone);
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      fetchCustomers(1, search, selectedBusinessId);
+    }, 600);
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [search, selectedBusinessId]);
+
+  useEffect(() => {
+    if (selectedCustomer && selectedCustomer.cus_id === activeCustomerId) {
+      const { firstname, lastname } = splitName(selectedCustomer.name);
+      setEditFirstname(firstname);
+      setEditLastname(lastname);
+      setEditPhone(stripPhonePrefix(selectedCustomer.phone));
+    }
+  }, [selectedCustomer, activeCustomerId]);
+
+  function openPanel(customerId: string) {
+    setActiveCustomerId(customerId);
     setCopied(false);
     setPanelOpen(true);
+    fetchCustomer(customerId);
   }
 
   function closePanel() {
     setPanelOpen(false);
     setActiveCustomerId(null);
+    clearSelectedCustomer();
   }
 
-  function handleSaveCustomer(e: React.FormEvent) {
+  function goToPage(page: number) {
+    fetchCustomers(page, search, selectedBusinessId);
+  }
+
+  async function handleSaveCustomer(e: React.FormEvent) {
     e.preventDefault();
     if (!activeCustomerId) return;
-    setCustomers((prev) =>
-      prev.map((c) =>
-        c.id === activeCustomerId
-          ? {
-              ...c,
-              firstname: editFirstname.trim(),
-              lastname: editLastname.trim(),
-              phone: editPhone.trim(),
-            }
-          : c,
-      ),
+
+    const result = await updateCustomer(activeCustomerId, {
+      firstname: editFirstname.trim(),
+      lastname: editLastname.trim(),
+      phone: `+234${editPhone.trim()}`,
+    });
+
+    showAlert(
+      result.success ? "success" : "error",
+      result.message ??
+        (result.success ? "Customer updated" : "Failed to update customer"),
     );
-    closePanel();
+
+    if (result.success) {
+      closePanel();
+    }
+  }
+
+  async function handleToggleBlacklist() {
+    if (!activeCustomerId || !selectedCustomer) return;
+
+    const result = await toggleBlacklist(
+      activeCustomerId,
+      !selectedCustomer.is_blacklist,
+    );
+
+    showAlert(
+      result.success ? "success" : "error",
+      result.message ??
+        (result.success
+          ? "Blacklist status updated"
+          : "Failed to update blacklist status"),
+    );
   }
 
   async function handleCopyEmail() {
-    if (!activeCustomer) return;
+    if (!selectedCustomer) return;
     try {
-      await navigator.clipboard.writeText(activeCustomer.email);
+      await navigator.clipboard.writeText(selectedCustomer.email);
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
     } catch (err) {
@@ -232,27 +243,35 @@ export default function CustomersPage() {
     setAddModalOpen(false);
   }
 
-  function handleAddCustomer(e: React.FormEvent) {
+  async function handleAddCustomer(e: React.FormEvent) {
     e.preventDefault();
-    const newCustomer: Customer = {
-      id: "c" + (customers.length + 1) + "_" + Date.now(),
+
+    if (!selectedBusinessId) {
+      showAlert("error", "No business selected");
+      return;
+    }
+
+    const result = await createCustomer({
+      business_id: selectedBusinessId,
+      first_name: addFirstname.trim(),
+      last_name: addLastname.trim(),
+      phone: `+234${addPhone.trim()}`,
       email: addEmail.trim(),
-      firstname: addFirstname.trim(),
-      lastname: addLastname.trim(),
-      phone: addPhone.trim(),
-      addedOn: new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
-      totalTx: 0,
-      successfulTx: 0,
-      totalSpent: 0,
-      transactions: [],
-    };
-    setCustomers((prev) => [newCustomer, ...prev]);
-    closeAddModal();
+    });
+
+    showAlert(
+      result.success ? "success" : "error",
+      result.message ??
+        (result.success ? "Customer added" : "Failed to add customer"),
+    );
+
+    if (result.success) {
+      closeAddModal();
+    }
   }
+
+  const recentTransactions =
+    selectedCustomer?.transactions.recent_transactions ?? [];
 
   return (
     <>
@@ -292,31 +311,44 @@ export default function CustomersPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredCustomers.map((c) => {
-                const fullName =
-                  c.firstname || c.lastname
-                    ? `${c.firstname} ${c.lastname}`.trim()
-                    : "";
-                return (
-                  <tr key={c.id} onClick={() => openPanel(c)}>
+              {isLoading ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="text-center py-8"
+                    style={{ color: "var(--muted)" }}
+                  >
+                    Loading customers...
+                  </td>
+                </tr>
+              ) : (
+                customers.map((c) => (
+                  <tr key={c.cus_id} onClick={() => openPanel(c.cus_id)}>
                     <td>
-                      <span className="status-dot"></span>
+                      <span
+                        className="status-dot"
+                        style={
+                          c.is_blacklist
+                            ? { background: "var(--danger)" }
+                            : undefined
+                        }
+                      ></span>
                     </td>
                     <td>{c.email}</td>
-                    <td style={fullName ? {} : { color: "var(--muted)" }}>
-                      {fullName || "No Name"}
+                    <td style={c.name ? {} : { color: "var(--muted)" }}>
+                      {c.name || "No Name"}
                     </td>
                     <td style={c.phone ? {} : { color: "var(--muted)" }}>
-                      {c.phone ? `+234 ${c.phone}` : "No Phone Number"}
+                      {displayPhone(c.phone) || "No Phone Number"}
                     </td>
-                    <td>{c.addedOn}</td>
+                    <td>{formatDate(c.date_added)}</td>
                   </tr>
-                );
-              })}
+                ))
+              )}
             </tbody>
           </table>
         </div>
-        {filteredCustomers.length === 0 && (
+        {!isLoading && customers.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-2">
             <SearchX className="w-8 h-8" style={{ color: "var(--muted)" }} />
             <p className="text-sm font-medium">No customers found</p>
@@ -325,12 +357,46 @@ export default function CustomersPage() {
             </p>
           </div>
         )}
+        {meta && meta.last_page > 1 && (
+          <div
+            className="flex items-center justify-between px-5 py-4"
+            style={{ borderTop: "1px solid var(--line)" }}
+          >
+            <p className="text-xs" style={{ color: "var(--muted)" }}>
+              Page {meta.current_page} of {meta.last_page} ({meta.total}{" "}
+              customers)
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={meta.current_page <= 1}
+                onClick={() => goToPage(meta.current_page - 1)}
+                className="btn-secondary px-4 py-2 rounded-lg text-sm font-medium"
+                style={{ opacity: meta.current_page <= 1 ? 0.5 : 1 }}
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                disabled={meta.current_page >= meta.last_page}
+                onClick={() => goToPage(meta.current_page + 1)}
+                className="btn-secondary px-4 py-2 rounded-lg text-sm font-medium"
+                style={{
+                  opacity: meta.current_page >= meta.last_page ? 0.5 : 1,
+                }}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div
         className={`overlay fixed inset-0 ${panelOpen ? "show" : ""}`}
         onClick={closePanel}
       ></div>
+
       <aside
         className={`side-panel fixed top-0 right-0 h-full overflow-y-auto ${panelOpen ? "open" : ""}`}
       >
@@ -349,8 +415,30 @@ export default function CustomersPage() {
           </button>
         </div>
 
-        {activeCustomer && (
+        {isLoadingDetails || !selectedCustomer ? (
+          <div className="px-6 py-6">
+            <p className="text-sm" style={{ color: "var(--muted)" }}>
+              Loading customer...
+            </p>
+          </div>
+        ) : (
           <div className="px-6 py-6 space-y-6">
+            <div className="card rounded-xl p-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Blacklist customer</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
+                  {selectedCustomer.is_blacklist
+                    ? "This customer is currently blacklisted"
+                    : "This customer is in good standing"}
+                </p>
+              </div>
+              <Switch
+                checked={selectedCustomer.is_blacklist}
+                disabled={isTogglingBlacklist}
+                onChange={handleToggleBlacklist}
+              />
+            </div>
+
             <form className="space-y-4" onSubmit={handleSaveCustomer}>
               <div>
                 <label className="text-sm font-medium block mb-1.5">
@@ -373,7 +461,6 @@ export default function CustomersPage() {
                   />
                 </div>
               </div>
-
               <div>
                 <label className="text-sm font-medium block mb-1.5">
                   Email address
@@ -383,7 +470,7 @@ export default function CustomersPage() {
                     type="email"
                     readOnly
                     className="input-field w-full px-3.5 py-2.5 rounded-lg text-sm"
-                    value={activeCustomer.email}
+                    value={selectedCustomer.email}
                   />
                   <button
                     type="button"
@@ -400,7 +487,6 @@ export default function CustomersPage() {
                   </button>
                 </div>
               </div>
-
               <div>
                 <label className="text-sm font-medium block mb-1.5">
                   Phone number
@@ -424,12 +510,12 @@ export default function CustomersPage() {
                   />
                 </div>
               </div>
-
               <button
                 type="submit"
+                disabled={isUpdating}
                 className="btn-primary px-5 py-2.5 rounded-lg text-sm font-medium text-white"
               >
-                Save changes
+                {isUpdating ? "Saving..." : "Save changes"}
               </button>
             </form>
 
@@ -439,7 +525,8 @@ export default function CustomersPage() {
                   Successful / Total
                 </p>
                 <p className="font-mono text-lg font-semibold">
-                  {activeCustomer.successfulTx} / {activeCustomer.totalTx}
+                  {selectedCustomer.transactions.successful_transactions} /{" "}
+                  {selectedCustomer.transactions.total_transactions}
                 </p>
               </div>
               <div className="card rounded-xl p-4">
@@ -447,7 +534,7 @@ export default function CustomersPage() {
                   Total spent
                 </p>
                 <p className="font-mono text-lg font-semibold">
-                  {formatNaira(activeCustomer.totalSpent)}
+                  {formatNaira(selectedCustomer.transactions.total_spent)}
                 </p>
               </div>
             </div>
@@ -457,7 +544,7 @@ export default function CustomersPage() {
                 <h4 className="font-semibold text-sm">Recent transactions</h4>
               </div>
               <div className="space-y-2">
-                {activeCustomer.transactions.length === 0 ? (
+                {recentTransactions.length === 0 ? (
                   <p
                     className="text-sm py-6 text-center"
                     style={{ color: "var(--muted)" }}
@@ -465,14 +552,14 @@ export default function CustomersPage() {
                     No transactions yet
                   </p>
                 ) : (
-                  activeCustomer.transactions.slice(0, 5).map((t, i) => (
+                  recentTransactions.slice(0, 5).map((t, i) => (
                     <div
                       key={i}
                       className="tx-row flex items-center justify-between px-3.5 py-2.5 rounded-lg"
                     >
                       <div>
                         <p className="text-sm font-medium font-mono">
-                          {formatNaira(t.price)}
+                          {formatNaira(t.amount)}
                         </p>
                         <p
                           className="text-xs"
@@ -482,7 +569,7 @@ export default function CustomersPage() {
                         </p>
                       </div>
                       <p className="text-xs" style={{ color: "var(--muted)" }}>
-                        {t.date}
+                        {formatDate(t.created_at)}
                       </p>
                     </div>
                   ))
@@ -587,14 +674,16 @@ export default function CustomersPage() {
             <div className="flex items-center gap-3 pt-2">
               <button
                 type="submit"
+                disabled={isCreating}
                 className="btn-primary flex-1 px-5 py-2.5 rounded-lg text-sm font-medium text-white"
               >
-                Add customer
+                {isCreating ? "Adding..." : "Add customer"}
               </button>
               <button
                 type="button"
-                className="btn-secondary px-5 py-2.5 rounded-lg text-sm font-medium"
                 onClick={closeAddModal}
+                disabled={isCreating}
+                className="btn-secondary px-5 py-2.5 rounded-lg text-sm font-medium"
               >
                 Cancel
               </button>
