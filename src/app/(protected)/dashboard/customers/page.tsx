@@ -9,10 +9,12 @@ import {
   Check,
   ChevronRight,
   SearchX,
+  Loader2,
 } from "lucide-react";
 import { useCustomerStore, useBusinessStore } from "@/app/stores/store";
 import { useAlert } from "../../../lib/alert-context";
 import "./customer.css";
+import Link from "next/link";
 
 function formatDate(value: string) {
   if (!value) return "-";
@@ -50,6 +52,10 @@ function splitName(name: string | null | undefined) {
   const lastname = parts.slice(1).join(" ");
 
   return { firstname, lastname };
+}
+
+function isEmailLike(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
 function stripPhonePrefix(phone?: string | null) {
@@ -114,6 +120,7 @@ export default function CustomersPage() {
   } = useCustomerStore();
 
   const [search, setSearch] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [activeCustomerId, setActiveCustomerId] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -129,6 +136,7 @@ export default function CustomersPage() {
   const [addPhone, setAddPhone] = useState("");
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const openedFromUrlRef = useRef(false);
 
   useEffect(() => {
     if (!selectedBusinessId) return;
@@ -139,9 +147,22 @@ export default function CustomersPage() {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
-    debounceRef.current = setTimeout(() => {
-      fetchCustomers(1, search, selectedBusinessId);
-    }, 600);
+
+    const trimmed = search.trim();
+
+    if (trimmed !== "" && !isEmailLike(trimmed)) {
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        await fetchCustomers(1, search, selectedBusinessId);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 2000);
 
     return () => {
       if (debounceRef.current) {
@@ -159,6 +180,17 @@ export default function CustomersPage() {
     }
   }, [selectedCustomer, activeCustomerId]);
 
+  useEffect(() => {
+    if (openedFromUrlRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const customerId = params.get("customer");
+    if (customerId) {
+      openedFromUrlRef.current = true;
+      openPanel(customerId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function openPanel(customerId: string) {
     setActiveCustomerId(customerId);
     setCopied(false);
@@ -170,6 +202,16 @@ export default function CustomersPage() {
     setPanelOpen(false);
     setActiveCustomerId(null);
     clearSelectedCustomer();
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("customer")) {
+      params.delete("customer");
+      const queryString = params.toString();
+      const newUrl = queryString
+        ? `/dashboard/customers?${queryString}`
+        : "/dashboard/customers";
+      window.history.replaceState(null, "", newUrl);
+    }
   }
 
   function goToPage(page: number) {
@@ -225,12 +267,6 @@ export default function CustomersPage() {
     }
   }
 
-  function handleViewAllTransactions() {
-    if (!activeCustomerId) return;
-    window.location.href =
-      "/dashboard/transactions?customer=" + encodeURIComponent(activeCustomerId);
-  }
-
   function openAddModal() {
     setAddFirstname("");
     setAddLastname("");
@@ -284,10 +320,16 @@ export default function CustomersPage() {
           <input
             type="text"
             placeholder="Search by email"
-            className="input-field w-full pl-10 pr-3.5 py-2.5 rounded-lg text-sm"
+            className="input-field w-full pl-10 pr-9 py-2.5 rounded-lg text-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          {isSearching && (
+            <Loader2
+              className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 animate-spin"
+              style={{ color: "var(--muted)" }}
+            />
+          )}
         </div>
         <button
           className="btn-primary flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white"
@@ -575,13 +617,13 @@ export default function CustomersPage() {
                   ))
                 )}
               </div>
-              <button
+              <Link
                 className="btn-secondary w-full mt-3 px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5"
-                onClick={handleViewAllTransactions}
+                href={`/dashboard/transactions?customer=${encodeURIComponent(activeCustomerId ?? "")}`}
               >
                 View all transactions
                 <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+              </Link>
             </div>
           </div>
         )}

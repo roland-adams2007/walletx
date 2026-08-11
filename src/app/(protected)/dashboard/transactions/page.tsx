@@ -13,6 +13,7 @@ import {
   ChevronDown,
   SearchX,
   Calendar,
+  Loader2,
 } from "lucide-react";
 import "./transaction.css";
 import { useTransactionStore, useBusinessStore } from "@/app/stores/store";
@@ -26,6 +27,10 @@ const dateOptions: { value: DateRangeOption; label: string }[] = [
   { value: "month", label: "This month" },
   { value: "custom", label: "Custom" },
 ];
+
+function isValidReference(value: string) {
+  return /^[a-zA-Z0-9_-]{3,}$/.test(value.trim());
+}
 
 function formatNaira(amount: number) {
   return (
@@ -84,6 +89,8 @@ export default function TransactionsPage() {
 
   // Local state for UI
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
   const [dateRange, setDateRange] = useState<DateRangeOption>("all");
   const [customStart, setCustomStart] = useState("");
@@ -95,6 +102,18 @@ export default function TransactionsPage() {
   const [typeInput, setTypeInput] = useState("all");
   const [channelInput, setChannelInput] = useState("all");
   const [statusInput, setStatusInput] = useState("all");
+
+  const [appliedDateRange, setAppliedDateRange] =
+    useState<DateRangeOption>("all");
+  const [appliedCustomStart, setAppliedCustomStart] = useState("");
+  const [appliedCustomEnd, setAppliedCustomEnd] = useState("");
+  const [appliedAmountMin, setAppliedAmountMin] = useState("");
+  const [appliedAmountMax, setAppliedAmountMax] = useState("");
+  const [appliedCustomer, setAppliedCustomer] = useState("");
+  const [appliedType, setAppliedType] = useState("all");
+  const [appliedChannel, setAppliedChannel] = useState("all");
+  const [appliedStatus, setAppliedStatus] = useState("all");
+
   const [copied, setCopied] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -109,49 +128,40 @@ export default function TransactionsPage() {
   );
   const [datePanelStyle, setDatePanelStyle] = useState<React.CSSProperties>({});
 
-  // Get customer_id from URL
-  const customerIdFromUrl = searchParams.get("customer");
-
   // Build filters from URL and local state
   const buildFilters = useCallback(() => {
     const filters: any = {};
 
-    if (search) filters.reference = search;
-    if (customerInput) filters.customer = customerInput;
-    if (amountMinInput) filters.min_amount = Number(amountMinInput);
-    if (amountMaxInput) filters.max_amount = Number(amountMaxInput);
-    if (typeInput !== "all") filters.transaction_type = typeInput;
-    if (channelInput !== "all") filters.channel = channelInput;
-    if (statusInput !== "all") filters.status = statusInput;
+    if (debouncedSearch) filters.reference = debouncedSearch;
+    if (appliedCustomer) filters.customer = appliedCustomer;
+    if (appliedAmountMin) filters.min_amount = Number(appliedAmountMin);
+    if (appliedAmountMax) filters.max_amount = Number(appliedAmountMax);
+    if (appliedType !== "all") filters.transaction_type = appliedType;
+    if (appliedChannel !== "all") filters.channel = appliedChannel;
+    if (appliedStatus !== "all") filters.status = appliedStatus;
 
     // Date filters
-    const dateType = dateRange;
-    if (dateType === "custom" && customStart && customEnd) {
+    const dateType = appliedDateRange;
+    if (dateType === "custom" && appliedCustomStart && appliedCustomEnd) {
       filters.date_type = "custom";
-      filters.start_date = customStart;
-      filters.end_date = customEnd;
+      filters.start_date = appliedCustomStart;
+      filters.end_date = appliedCustomEnd;
     } else if (dateType !== "all") {
       filters.date_type = dateType;
     }
 
-    // Customer filter from URL
-    if (customerIdFromUrl) {
-      filters.cus_id = customerIdFromUrl;
-    }
-
     return filters;
   }, [
-    search,
-    customerInput,
-    amountMinInput,
-    amountMaxInput,
-    typeInput,
-    channelInput,
-    statusInput,
-    dateRange,
-    customStart,
-    customEnd,
-    customerIdFromUrl,
+    debouncedSearch,
+    appliedCustomer,
+    appliedAmountMin,
+    appliedAmountMax,
+    appliedType,
+    appliedChannel,
+    appliedStatus,
+    appliedDateRange,
+    appliedCustomStart,
+    appliedCustomEnd,
   ]);
 
   // Update URL with current filters (only if initialized)
@@ -173,11 +183,6 @@ export default function TransactionsPage() {
       params.set("page", String(currentPage));
     }
 
-    // Remove customer if it's already in filters
-    if (customerIdFromUrl) {
-      params.set("customer", customerIdFromUrl);
-    }
-
     const queryString = params.toString();
     const newUrl = queryString
       ? `/dashboard/transactions?${queryString}`
@@ -188,7 +193,7 @@ export default function TransactionsPage() {
     if (newUrl !== currentPath) {
       router.replace(newUrl, { scroll: false });
     }
-  }, [buildFilters, currentPage, customerIdFromUrl, router, isInitialized]);
+  }, [buildFilters, currentPage, router, isInitialized]);
 
   // Fetch transactions when filters change
   useEffect(() => {
@@ -205,7 +210,6 @@ export default function TransactionsPage() {
     currentPage,
     buildFilters,
     fetchTransactions,
-    customerIdFromUrl,
     isInitialized,
   ]);
 
@@ -219,53 +223,67 @@ export default function TransactionsPage() {
     const reference = params.get("reference");
     if (reference) {
       setSearch(reference);
+      setDebouncedSearch(reference);
       hasFilters = true;
     }
 
     const customer = params.get("customer");
     if (customer) {
       setCustomerInput(customer);
+      setAppliedCustomer(customer);
       hasFilters = true;
     }
 
     const minAmount = params.get("min_amount");
     if (minAmount) {
       setAmountMinInput(minAmount);
+      setAppliedAmountMin(minAmount);
       hasFilters = true;
     }
 
     const maxAmount = params.get("max_amount");
     if (maxAmount) {
       setAmountMaxInput(maxAmount);
+      setAppliedAmountMax(maxAmount);
       hasFilters = true;
     }
 
     const type = params.get("transaction_type");
     if (type) {
       setTypeInput(type);
+      setAppliedType(type);
       hasFilters = true;
     }
 
     const channel = params.get("channel");
     if (channel) {
       setChannelInput(channel);
+      setAppliedChannel(channel);
       hasFilters = true;
     }
 
     const status = params.get("status");
     if (status) {
       setStatusInput(status);
+      setAppliedStatus(status);
       hasFilters = true;
     }
 
     const dateType = params.get("date_type");
     if (dateType && dateType !== "all") {
       setDateRange(dateType as DateRangeOption);
+      setAppliedDateRange(dateType as DateRangeOption);
       if (dateType === "custom") {
         const start = params.get("start_date");
         const end = params.get("end_date");
-        if (start) setCustomStart(start);
-        if (end) setCustomEnd(end);
+        if (start) {
+          setCustomStart(start);
+          setAppliedCustomStart(start);
+        }
+        if (end) {
+          setCustomEnd(end);
+          setAppliedCustomEnd(end);
+        }
       }
       hasFilters = true;
     }
@@ -275,14 +293,16 @@ export default function TransactionsPage() {
       setCurrentPage(Number(page));
     }
 
-    // Set customer from URL if present
-    if (customerIdFromUrl) {
-      setCustomerInput(customerIdFromUrl);
-    }
-
     // Mark as initialized
     setIsInitialized(true);
-  }, [searchParams, customerIdFromUrl]);
+    // Intentionally runs once on mount only. After init, local state is
+    // the single source of truth and pushes changes to the URL (see
+    // updateUrlParams below). Re-reading the URL on every change here
+    // was what made Reset unable to clear "customer"/"cus_id": the URL
+    // hadn't updated yet on the same tick, so this effect immediately
+    // wrote the old customer value straight back into state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Update URL when filters change (only after initialization)
   useEffect(() => {
@@ -290,31 +310,42 @@ export default function TransactionsPage() {
       updateUrlParams();
     }
   }, [
-    search,
-    customerInput,
-    amountMinInput,
-    amountMaxInput,
-    typeInput,
-    channelInput,
-    statusInput,
-    dateRange,
-    customStart,
-    customEnd,
+    debouncedSearch,
+    appliedCustomer,
+    appliedAmountMin,
+    appliedAmountMax,
+    appliedType,
+    appliedChannel,
+    appliedStatus,
+    appliedDateRange,
+    appliedCustomStart,
+    appliedCustomEnd,
     currentPage,
     isInitialized,
     updateUrlParams,
   ]);
 
-  // Handle search with debounce
+  // Handle reference search with debounce + validation
   useEffect(() => {
     if (!isInitialized) return;
 
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
+
+    const trimmed = search.trim();
+
+    if (trimmed !== "" && !isValidReference(trimmed)) {
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
     debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(search);
       setCurrentPage(1);
-    }, 600);
+      setIsSearching(false);
+    }, 2000);
 
     return () => {
       if (debounceRef.current) {
@@ -384,24 +415,43 @@ export default function TransactionsPage() {
   function selectDateOption(option: DateRangeOption) {
     setDateRange(option);
     if (option !== "custom") {
+      setAppliedDateRange(option);
+      setAppliedCustomStart("");
+      setAppliedCustomEnd("");
+      setCurrentPage(1);
       setDateOpen(false);
     }
   }
 
   function applyCustomDate() {
+    setAppliedDateRange("custom");
+    setAppliedCustomStart(customStart);
+    setAppliedCustomEnd(customEnd);
+    setCurrentPage(1);
     setDateOpen(false);
   }
 
+  function applyFilters() {
+    setAppliedCustomer(customerInput);
+    setAppliedAmountMin(amountMinInput);
+    setAppliedAmountMax(amountMaxInput);
+    setAppliedType(typeInput);
+    setAppliedChannel(channelInput);
+    setAppliedStatus(statusInput);
+    setCurrentPage(1);
+    setFilterOpen(false);
+  }
+
   const activeFilterCount =
-    (amountMinInput ? 1 : 0) +
-    (amountMaxInput ? 1 : 0) +
-    (customerInput ? 1 : 0) +
-    (typeInput !== "all" ? 1 : 0) +
-    (channelInput !== "all" ? 1 : 0) +
-    (statusInput !== "all" ? 1 : 0);
+    (appliedAmountMin ? 1 : 0) +
+    (appliedAmountMax ? 1 : 0) +
+    (appliedCustomer ? 1 : 0) +
+    (appliedType !== "all" ? 1 : 0) +
+    (appliedChannel !== "all" ? 1 : 0) +
+    (appliedStatus !== "all" ? 1 : 0);
 
   const activeDateLabel =
-    dateOptions.find((d) => d.value === dateRange)?.label ?? "All time";
+    dateOptions.find((d) => d.value === appliedDateRange)?.label ?? "All time";
 
   function resetFilters() {
     setAmountMinInput("");
@@ -414,6 +464,18 @@ export default function TransactionsPage() {
     setCustomStart("");
     setCustomEnd("");
     setSearch("");
+
+    setAppliedAmountMin("");
+    setAppliedAmountMax("");
+    setAppliedCustomer("");
+    setAppliedType("all");
+    setAppliedChannel("all");
+    setAppliedStatus("all");
+    setAppliedDateRange("all");
+    setAppliedCustomStart("");
+    setAppliedCustomEnd("");
+    setDebouncedSearch("");
+
     setCurrentPage(1);
     clearFilters();
   }
@@ -454,8 +516,11 @@ export default function TransactionsPage() {
               placeholder="Search reference"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="input-field w-full pl-10 pr-3.5 py-2.5 rounded-lg text-sm"
+              className="input-field w-full pl-10 pr-9 py-2.5 rounded-lg text-sm"
             />
+            {isSearching && (
+              <Loader2 className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 animate-spin text-muted" />
+            )}
           </div>
 
           <div className="relative">
@@ -640,9 +705,7 @@ export default function TransactionsPage() {
               </div>
               <div className="flex items-center gap-3 mt-5">
                 <button
-                  onClick={() => {
-                    setFilterOpen(false);
-                  }}
+                  onClick={applyFilters}
                   className="btn-primary flex-1 px-4 py-2.5 rounded-lg text-sm font-medium text-white"
                 >
                   Apply
