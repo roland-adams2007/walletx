@@ -280,7 +280,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     Profile
                   </Link>
                   <Link
-                    href="/dashboard/preferences"
+                    href="/dashboard/settings/preferences"
                     className="profile-dropdown-item flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium"
                     onClick={() => setProfileOpen(false)}
                   >
