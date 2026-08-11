@@ -3,7 +3,6 @@ import {
   CheckCircle2,
   ArrowRight,
   Building2,
-  Store,
   User,
   Zap,
   CreditCard,
@@ -11,6 +10,7 @@ import {
   ShieldCheck,
   Globe,
   Users,
+  Percent,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -21,81 +21,84 @@ export const metadata = {
 export default function Home() {
   return (
     <div className="landing-page antialiased">
-      {/* NAV */}
-      <header className="max-w-6xl mx-auto px-6 md:px-10 py-6 flex items-center justify-between">
-        <Link
-          href="/"
-          className="font-display font-semibold text-2xl tracking-tight"
-          style={{ color: "var(--moss-dark)" }}
-        >
-          <Image
-            src="/logo.png"
-            alt="WalletX"
-            width={140}
-            height={40}
-            unoptimized
-            className="h-12 w-auto"
+      {/* NAV + HERO — image background with overlay */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img src="/hero.png" alt="" className="w-full h-full object-cover" />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(18,53,39,0.55) 0%, rgba(18,53,39,0.68) 45%, rgba(18,53,39,0.85) 100%)",
+            }}
           />
-        </Link>
-        <nav
-          className="hidden lg:flex items-center gap-8 text-sm"
-          style={{ color: "var(--slate)" }}
-        >
-          <a href="#segments" className="hover:text-(--ink) transition-colors">
-            Enterprise
-          </a>
-          <a href="#segments" className="hover:text-(--ink) transition-colors">
-            Business
-          </a>
-          <a
-            href="#developers"
-            className="hover:text-(--ink) transition-colors"
-          >
-            Developers
-          </a>
-          <a href="#ledger" className="hover:text-(--ink) transition-colors">
-            Security
-          </a>
-          <a href="#features" className="hover:text-(--ink) transition-colors">
-            Pricing
-          </a>
-        </nav>
-        <div className="flex items-center gap-3 sm:gap-5">
-          <Link
-            href="/login"
-            className="font-mono text-sm hidden sm:inline hover:text-(--moss-dark) transition-colors"
-            style={{ color: "var(--ink)" }}
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/register"
-            className="text-sm px-5 py-2.5 rounded-full text-white transition-transform hover:-translate-y-0.5"
-            style={{ background: "var(--moss)" }}
-          >
-            Get started
-          </Link>
         </div>
-      </header>
 
-      {/* HERO */}
-      <section className="max-w-6xl mx-auto px-6 md:px-10 pt-10 md:pt-16 pb-24 grid lg:grid-cols-2 gap-14 lg:gap-16 items-start">
-        <div>
+        <header className="relative z-10 max-w-6xl mx-auto px-6 md:px-10 py-6 flex items-center justify-between">
+          <Link
+            href="/"
+            className="font-display font-semibold text-2xl tracking-tight"
+            style={{ color: "var(--moss-dark)" }}
+          >
+            <Image
+              src="/logo.png"
+              alt="WalletX"
+              width={140}
+              height={40}
+              unoptimized
+              className="h-12 w-auto"
+            />
+          </Link>
+          <nav className="hidden lg:flex items-center gap-8 text-sm text-white/80">
+            <a href="#segments" className="hover:text-white transition-colors">
+              Business
+            </a>
+            <a href="#segments" className="hover:text-white transition-colors">
+              Individual
+            </a>
+            <a
+              href="#developers"
+              className="hover:text-white transition-colors"
+            >
+              Developers
+            </a>
+            <a href="#ledger" className="hover:text-white transition-colors">
+              Security
+            </a>
+            <a href="#pricing" className="hover:text-white transition-colors">
+              Pricing
+            </a>
+          </nav>
+          <div className="flex items-center gap-3 sm:gap-5">
+            <Link
+              href="/login"
+              className="font-mono text-sm hidden sm:inline text-white/80 hover:text-white transition-colors"
+            >
+              Sign in
+            </Link>
+            <Link
+              href="/register"
+              className="text-sm px-5 py-2.5 rounded-full text-white transition-transform hover:-translate-y-0.5"
+              style={{ background: "var(--moss)" }}
+            >
+              Get started
+            </Link>
+          </div>
+        </header>
+
+        <section className="relative z-10 max-w-6xl mx-auto px-6 md:px-10 pt-14 pb-28 md:pt-20 md:pb-40">
           <p
             className="font-mono text-xs uppercase tracking-[0.2em] mb-5"
             style={{ color: "var(--gold)" }}
           >
             Payment infrastructure, not a black box
           </p>
-          <h1 className="font-display font-semibold text-4xl sm:text-5xl md:text-[3.3rem] leading-[1.08] mb-6 tracking-tight">
+          <h1 className="font-display font-semibold text-4xl sm:text-5xl md:text-6xl leading-[1.08] mb-6 tracking-tight max-w-2xl text-white">
             Every transfer, booked twice,{" "}
-            <span style={{ color: "var(--moss)" }}>trusted always.</span>
+            <span style={{ color: "#9fcbb2" }}>trusted always.</span>
           </h1>
-          <p
-            className="text-base md:text-lg max-w-md mb-8"
-            style={{ color: "var(--slate)" }}
-          >
-            Ledgr gives businesses of every size one place to accept payments,
+          <p className="text-base md:text-lg max-w-md mb-9 text-white/80">
+            WalletX gives businesses of every size one place to accept payments,
             send payouts, and reconcile — backed by a real double-entry ledger
             behind every single transaction.
           </p>
@@ -107,177 +110,31 @@ export default function Home() {
             >
               Create a free account
             </Link>
-            <a
-              href="#developers"
-              className="text-sm font-medium underline underline-offset-4 decoration-line hover:text-(--moss)"
-              style={{ color: "var(--slate)" }}
+            <Link
+              href="/docs#overview"
+              className="px-6 py-3.5 rounded-full text-sm font-medium border border-white/30 text-white transition-colors hover:bg-white/10"
             >
               Read the API docs
-            </a>
+            </Link>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
-            <span
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border"
-              style={{ borderColor: "var(--line)", color: "var(--slate)" }}
-            >
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 text-white/80">
               <ShieldCheck
                 className="w-3.5 h-3.5"
-                style={{ color: "var(--moss)" }}
+                style={{ color: "#9fcbb2" }}
               />
               Bank-grade security
             </span>
-            <span
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border"
-              style={{ borderColor: "var(--line)", color: "var(--slate)" }}
-            >
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 text-white/80">
               <CheckCircle2
                 className="w-3.5 h-3.5"
-                style={{ color: "var(--moss)" }}
+                style={{ color: "#9fcbb2" }}
               />
               Settles in NGN
             </span>
           </div>
-        </div>
-
-        {/* Signature: dashboard card + live ledger ticker */}
-        <div>
-          <div
-            className="rounded-3xl p-6 shadow-2xl mb-6"
-            style={{
-              background:
-                "linear-gradient(160deg, var(--moss-dark), var(--moss))",
-            }}
-          >
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <p className="text-[10px] uppercase tracking-widest text-white/60 mb-1 font-mono">
-                  Settled today
-                </p>
-                <p className="font-display font-semibold text-3xl text-white">
-                  ₦4,820,300
-                </p>
-              </div>
-              <div className="relative">
-                <span className="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono text-white/80 border border-white/20">
-                  <span className="relative w-1.5 h-1.5">
-                    <span
-                      className="absolute inset-0 rounded-full bg-emerald-300 pulse-dot"
-                      style={{ color: "#6ee7b7" }}
-                    />
-                    <span className="relative w-1.5 h-1.5 rounded-full bg-emerald-300 block" />
-                  </span>
-                  Live
-                </span>
-              </div>
-            </div>
-            <svg
-              viewBox="0 0 280 60"
-              className="w-full h-14 mb-1"
-              preserveAspectRatio="none"
-            >
-              <g fill="rgba(255,255,255,0.35)">
-                <rect x="0" y="30" width="16" height="30" rx="2" />
-                <rect x="24" y="20" width="16" height="40" rx="2" />
-                <rect x="48" y="34" width="16" height="26" rx="2" />
-                <rect x="72" y="14" width="16" height="46" rx="2" />
-                <rect x="96" y="26" width="16" height="34" rx="2" />
-                <rect x="120" y="8" width="16" height="52" rx="2" />
-                <rect x="144" y="22" width="16" height="38" rx="2" />
-                <rect x="168" y="12" width="16" height="48" rx="2" />
-                <rect x="192" y="18" width="16" height="42" rx="2" />
-                <rect x="216" y="4" width="16" height="56" rx="2" />
-              </g>
-              <rect
-                x="240"
-                y="0"
-                width="16"
-                height="60"
-                rx="2"
-                fill="#c89b3c"
-              />
-              <rect
-                x="264"
-                y="10"
-                width="16"
-                height="50"
-                rx="2"
-                fill="#c89b3c"
-              />
-            </svg>
-            <p className="text-[10px] font-mono text-white/50">
-              Last 12 days · settlement volume
-            </p>
-          </div>
-
-          <div
-            className="rounded-2xl border overflow-hidden h-32 relative"
-            style={{ borderColor: "var(--line)", background: "white" }}
-          >
-            <div className="ticker absolute inset-x-0 top-0">
-              {[
-                {
-                  ref: "TXN-88410",
-                  label: "Zaron Foods · card",
-                  amount: "+₦128,400",
-                  positive: true,
-                },
-                {
-                  ref: "PYT-30291",
-                  label: "Payout · Adaeze Motors",
-                  amount: "−₦64,200",
-                  positive: false,
-                },
-                {
-                  ref: "TXN-88409",
-                  label: "Kola Studio · transfer",
-                  amount: "+₦842,900",
-                  positive: true,
-                },
-                {
-                  ref: "TXN-88410",
-                  label: "Zaron Foods · card",
-                  amount: "+₦128,400",
-                  positive: true,
-                },
-                {
-                  ref: "PYT-30291",
-                  label: "Payout · Adaeze Motors",
-                  amount: "−₦64,200",
-                  positive: false,
-                },
-                {
-                  ref: "TXN-88409",
-                  label: "Kola Studio · transfer",
-                  amount: "+₦842,900",
-                  positive: true,
-                },
-              ].map((row, i) => (
-                <div
-                  key={i}
-                  className="px-5 py-3 border-b text-sm flex justify-between items-center"
-                  style={{ borderColor: "var(--line)" }}
-                >
-                  <span
-                    className="font-mono text-[11px]"
-                    style={{ color: "var(--slate)" }}
-                  >
-                    {row.ref}
-                  </span>
-                  <span className="truncate px-2">{row.label}</span>
-                  <span
-                    className="font-mono text-sm"
-                    style={{
-                      color: row.positive ? "var(--moss)" : "var(--slate)",
-                    }}
-                  >
-                    {row.amount}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* LOGO BAR */}
       <section
@@ -334,9 +191,27 @@ export default function Home() {
                   )}
                   {mark === "bars" && (
                     <>
-                      <rect x="1" y="9" width="4" height="8" fill="currentColor" />
-                      <rect x="7" y="4" width="4" height="13" fill="currentColor" />
-                      <rect x="13" y="7" width="4" height="10" fill="currentColor" />
+                      <rect
+                        x="1"
+                        y="9"
+                        width="4"
+                        height="8"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="7"
+                        y="4"
+                        width="4"
+                        height="13"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="13"
+                        y="7"
+                        width="4"
+                        height="10"
+                        fill="currentColor"
+                      />
                     </>
                   )}
                 </svg>
@@ -362,17 +237,10 @@ export default function Home() {
         <h2 className="font-display font-semibold text-3xl md:text-4xl mb-14 max-w-xl tracking-tight">
           One ledger, however your business gets paid.
         </h2>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 gap-6">
           {[
             {
               icon: Building2,
-              title: "Enterprise",
-              body: "Custom settlement terms, dedicated infrastructure, and a team that answers when volume spikes.",
-              cta: "Talk to sales",
-              href: "#",
-            },
-            {
-              icon: Store,
               title: "Business",
               body: "Start accepting cards, transfers, and mobile money in a day, no minimum volume required.",
               cta: "Create free account",
@@ -380,7 +248,7 @@ export default function Home() {
             },
             {
               icon: User,
-              title: "Personal",
+              title: "Individual",
               body: "Freelancers and sole traders get paid, hold a balance, and send money out, no company needed.",
               cta: "Get paid faster",
               href: "#",
@@ -517,8 +385,8 @@ export default function Home() {
               Every transaction, accounted for twice.
             </h2>
             <p className="max-w-md" style={{ color: "#b9c2bc" }}>
-              Most processors just update a number. Ledgr books two entries for
-              every transaction, one leaving the payer, one arriving in your
+              Most processors just update a number. WalletX books two entries
+              for every transaction, one leaving the payer, one arriving in your
               settlement account, in the same instant. When a dispute lands in
               support, you can trace it to the kobo.
             </p>
@@ -622,6 +490,89 @@ export default function Home() {
         </div>
       </section>
 
+      {/* PRICING */}
+      <section
+        id="pricing"
+        className="max-w-6xl mx-auto px-6 md:px-10 py-20 border-b"
+        style={{ borderColor: "var(--line)" }}
+      >
+        <p
+          className="font-mono text-xs uppercase tracking-[0.2em] mb-4"
+          style={{ color: "var(--gold)" }}
+        >
+          Pricing
+        </p>
+        <h2 className="font-display font-semibold text-3xl md:text-4xl mb-4 max-w-xl tracking-tight">
+          One flat rate. No tiers to negotiate.
+        </h2>
+        <p className="max-w-lg mb-14" style={{ color: "var(--slate)" }}>
+          Every transaction costs 1.5%, capped at ₦2,000, however you get paid.
+          No setup fees, no monthly minimums, no separate rate for
+          &quot;enterprise&quot;.
+        </p>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {[
+            {
+              icon: Building2,
+              title: "Business",
+              body: "For registered companies accepting cards, transfers, and mobile money.",
+              cta: "Create free account",
+              href: "/register",
+            },
+            {
+              icon: User,
+              title: "Individual",
+              body: "For freelancers and sole traders who just need to get paid.",
+              cta: "Get paid faster",
+              href: "#",
+            },
+          ].map(({ icon: Icon, title, body, cta, href }) => (
+            <div
+              key={title}
+              className="rounded-2xl border p-7"
+              style={{ borderColor: "var(--line)" }}
+            >
+              <div className="flex items-center justify-between mb-5">
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center"
+                  style={{ background: "var(--moss)" }}
+                >
+                  <Icon className="w-5 h-5 text-white" />
+                </div>
+                <span
+                  className="flex items-center gap-1 font-mono text-xs px-2.5 py-1 rounded-full"
+                  style={{
+                    background: "var(--paper)",
+                    color: "var(--moss-dark)",
+                  }}
+                >
+                  <Percent className="w-3 h-3" />
+                  1.5%
+                </span>
+              </div>
+              <p className="font-display font-semibold text-lg mb-2">{title}</p>
+              <p className="text-sm mb-4" style={{ color: "var(--slate)" }}>
+                {body}
+              </p>
+              <p
+                className="font-mono text-xs mb-5"
+                style={{ color: "var(--moss)" }}
+              >
+                1.5% per transaction · capped at ₦2,000
+              </p>
+              <Link
+                href={href}
+                className="text-sm font-medium inline-flex items-center gap-1.5 hover:gap-2.5 transition-all"
+                style={{ color: "var(--moss)" }}
+              >
+                {cta} <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* DEVELOPERS */}
       <section
         id="developers"
@@ -643,14 +594,14 @@ export default function Home() {
             it settled. Sandbox keys work the moment you sign up, no waiting on
             approval to start building.
           </p>
-          <a
-            href="#"
+          <Link
+            href="/docs#charge"
             className="text-sm font-medium inline-flex items-center gap-1.5 hover:gap-2.5 transition-all"
             style={{ color: "var(--moss)" }}
           >
             Read the API reference
             <ArrowRight className="w-3.5 h-3.5" />
-          </a>
+          </Link>
         </div>
 
         <div
@@ -688,7 +639,7 @@ export default function Home() {
               <span style={{ color: "#f6f2e7" }}>charge</span>{" "}
               <span style={{ color: "#9fcbb2" }}>=</span>{" "}
               <span style={{ color: "#9fcbb2" }}>await</span>{" "}
-              <span style={{ color: "#f6f2e7" }}>ledgr</span>.
+              <span style={{ color: "#f6f2e7" }}>walletx</span>.
               <span style={{ color: "#c89b3c" }}>charges</span>.
               <span style={{ color: "#c89b3c" }}>create</span>({"{"}
               {"\n  "}
@@ -704,7 +655,9 @@ export default function Home() {
               {"});"}
               {"\n\n"}
               <span style={{ color: "#8c978f" }}>
-                {'// { status: "success", ref: "TXN-88410" }'}
+                {
+                  '// { success: true, data: { reference: "TXN-88410", status: "success" } }'
+                }
               </span>
             </code>
           </pre>
@@ -819,14 +772,6 @@ export default function Home() {
                     href="#segments"
                     className="hover:text-(--ink) transition-colors"
                   >
-                    Enterprise
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#segments"
-                    className="hover:text-(--ink) transition-colors"
-                  >
                     Business
                   </a>
                 </li>
@@ -835,7 +780,15 @@ export default function Home() {
                     href="#segments"
                     className="hover:text-(--ink) transition-colors"
                   >
-                    Personal
+                    Individual
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#pricing"
+                    className="hover:text-(--ink) transition-colors"
+                  >
+                    Pricing
                   </a>
                 </li>
               </ul>
@@ -852,12 +805,20 @@ export default function Home() {
                 style={{ color: "var(--slate)" }}
               >
                 <li>
-                  <a
-                    href="#developers"
+                  <Link
+                    href="/docs#overview"
                     className="hover:text-(--ink) transition-colors"
                   >
                     API reference
-                  </a>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/docs#webhooks"
+                    className="hover:text-(--ink) transition-colors"
+                  >
+                    Webhooks
+                  </Link>
                 </li>
                 <li>
                   <a
@@ -865,14 +826,6 @@ export default function Home() {
                     className="hover:text-(--ink) transition-colors"
                   >
                     Security
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#features"
-                    className="hover:text-(--ink) transition-colors"
-                  >
-                    Pricing
                   </a>
                 </li>
               </ul>
@@ -907,11 +860,10 @@ export default function Home() {
             </div>
           </div>
           <div
-            className="pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono"
+            className="pt-6 border-t flex items-center justify-center text-xs font-mono"
             style={{ borderColor: "var(--line)", color: "var(--slate)" }}
           >
-            <span>© 2026 WalleX. All rights reserved.</span>
-            <span>Built in Lagos.</span>
+            <span>© 2026 WalletX. All rights reserved.</span>
           </div>
         </div>
       </footer>

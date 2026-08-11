@@ -390,7 +390,7 @@ export default function DocsPage() {
               tabs={[
                 {
                   label: "HTML",
-                  code: '<script src="https://js.walletx.africa/v1/gateway.js"></script>',
+                  code: `<script src="https://${API_BASE_URL}/v1/gateway.js"></script>`,
                 },
               ]}
             />
