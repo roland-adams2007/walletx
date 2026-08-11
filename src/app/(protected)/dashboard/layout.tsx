@@ -21,6 +21,7 @@ import {
   User,
   SlidersHorizontal,
   LogOut,
+  FileText,
 } from "lucide-react";
 import "./dashboard.css";
 import { useUserStore, useBusinessStore } from "@/app/stores/store";
@@ -36,6 +37,7 @@ const navItems = [
   { href: "/dashboard/transfer", label: "Transfer", icon: Send },
   { href: "/dashboard/customers", label: "Customers", icon: Users },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  { href: "/docs", label: "Docs", icon: FileText },
 ];
 
 const pageTitles: Record<string, string> = {
@@ -49,8 +51,15 @@ const pageTitles: Record<string, string> = {
 
 function getPageTitle(pathname: string) {
   if (pageTitles[pathname]) return pageTitles[pathname];
-  if (pathname.startsWith("/dashboard/settings")) return "Settings";
-  return "Overview";
+  const match = navItems.find(
+    (item) => item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`)
+  );
+  return match?.label ?? "Overview";
+}
+
+function isNavItemActive(pathname: string, href: string) {
+  if (href === "/dashboard") return pathname === "/dashboard";
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 function getInitials(firstname?: string, lastname?: string) {
@@ -223,7 +232,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
         <nav className="px-3 space-y-1 text-sm font-medium">
           {navItems.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href;
+            const active = isNavItemActive(pathname, href);
             return (
               <Link
                 key={href}
