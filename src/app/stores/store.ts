@@ -5,3 +5,5 @@ export { useUploadStore } from "./modules/uploadStore";
 export { useBankStore } from "./modules/bankStore";
 export { useCustomerStore } from "./modules/customerStore";
 export { useTransactionStore } from "./modules/transactionStore";
+export { useDashboardStore } from "./modules/dashboardStore";
+export type { DashboardDateType } from "./modules/dashboardStore";

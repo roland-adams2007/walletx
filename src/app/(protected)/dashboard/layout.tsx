@@ -17,6 +17,10 @@ import {
   Menu,
   X,
   AlertTriangle,
+  Loader2,
+  User,
+  SlidersHorizontal,
+  LogOut,
 } from "lucide-react";
 import "./dashboard.css";
 import { useUserStore, useBusinessStore } from "@/app/stores/store";
@@ -57,7 +61,7 @@ function getInitials(firstname?: string, lastname?: string) {
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isLoading, hasFetched, fetchUser } = useUserStore();
+  const { user, isLoading, hasFetched, fetchUser, logout } = useUserStore();
   const {
     selectedBusinessId,
     hasHydrated,
@@ -70,6 +74,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const [switchingToName, setSwitchingToName] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUser();
@@ -103,6 +110,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       ) {
         setSwitcherOpen(false);
       }
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target as Node)
+      ) {
+        setProfileOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -119,8 +132,28 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const initials = getInitials(user?.firstname, user?.lastname);
   const isBusinessInactive = businessDetails?.is_active === false;
 
+  async function handleBusinessSwitch(altId: string, name: string) {
+    if (altId === activeBusiness?.alt_id) {
+      setSwitcherOpen(false);
+      return;
+    }
+    setSwitcherOpen(false);
+    setSwitchingToName(name);
+    setSelectedBusinessId(altId);
+    await fetchBusinessDetails(altId);
+    setSwitchingToName(null);
+  }
+
   return (
     <div className="min-h-screen lg:flex">
+      {switchingToName && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 business-switch-overlay">
+          <Loader2 className="w-8 h-8 animate-spin text-white" />
+          <p className="text-sm font-medium text-white">
+            Switching to {switchingToName}
+          </p>
+        </div>
+      )}
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
@@ -160,10 +193,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   return (
                     <button
                       key={b.alt_id}
-                      onClick={() => {
-                        setSelectedBusinessId(b.alt_id);
-                        setSwitcherOpen(false);
-                      }}
+                      onClick={() => handleBusinessSwitch(b.alt_id, b.name)}
                       className="biz-dropdown-item w-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-left"
                     >
                       <div className="min-w-0">
@@ -231,8 +261,44 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               <Bell className="w-4 h-4 text-muted" />
               <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-danger" />
             </button>
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold text-white bg-brand">
-              {initials}
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setProfileOpen((v) => !v)}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold text-white bg-brand"
+                aria-label="Profile menu"
+              >
+                {initials}
+              </button>
+              {profileOpen && (
+                <div className="profile-dropdown absolute right-0 top-[calc(100%+8px)] w-48 rounded-lg overflow-hidden z-20">
+                  <Link
+                    href="/dashboard/settings"
+                    className="profile-dropdown-item flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium"
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    <User className="w-4 h-4" />
+                    Profile
+                  </Link>
+                  <Link
+                    href="/dashboard/preferences"
+                    className="profile-dropdown-item flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium"
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    <SlidersHorizontal className="w-4 h-4" />
+                    Preferences
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setProfileOpen(false);
+                      logout();
+                    }}
+                    className="profile-dropdown-item profile-dropdown-danger w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium text-left"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>

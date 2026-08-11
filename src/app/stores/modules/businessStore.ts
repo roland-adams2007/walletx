@@ -122,14 +122,27 @@ type UpdatePreferenceResponse = {
   data: BusinessPreference;
 };
 
+export type BusinessBalance = {
+  alt_id: string;
+  balance: number;
+  pending_balance: number;
+};
+
+type GetBusinessBalanceResponse = {
+  success: boolean;
+  data: BusinessBalance;
+};
+
 const STORAGE_KEY = "selected_business_id";
 
 type BusinessState = {
   selectedBusinessId: string | null;
   hasHydrated: boolean;
   businessDetails: BusinessDetails | null;
+  balance: BusinessBalance | null;
   isCreating: boolean;
   isLoadingDetails: boolean;
+  isLoadingBalance: boolean;
   isDeactivating: boolean;
   isUpdatingDetails: boolean;
   isUpgrading: boolean;
@@ -141,6 +154,7 @@ type BusinessState = {
   clearSelectedBusiness: () => void;
 
   fetchBusinessDetails: (altId: string) => Promise<void>;
+  fetchBusinessBalance: (altId: string) => Promise<void>;
   createBusiness: (
     payload: CreateBusinessPayload,
   ) => Promise<{ success: boolean; message?: string; altId?: string }>;
@@ -165,8 +179,10 @@ export const useBusinessStore = create<BusinessState>()((set, get) => ({
   selectedBusinessId: null,
   hasHydrated: false,
   businessDetails: null,
+  balance: null,
   isCreating: false,
   isLoadingDetails: false,
+  isLoadingBalance: false,
   isDeactivating: false,
   isUpdatingDetails: false,
   isUpgrading: false,
@@ -190,7 +206,7 @@ export const useBusinessStore = create<BusinessState>()((set, get) => ({
     if (typeof window !== "undefined") {
       localStorage.removeItem(STORAGE_KEY);
     }
-    set({ selectedBusinessId: null, businessDetails: null });
+    set({ selectedBusinessId: null, businessDetails: null, balance: null });
   },
 
   fetchBusinessDetails: async (altId) => {
@@ -206,6 +222,23 @@ export const useBusinessStore = create<BusinessState>()((set, get) => ({
       }
     } catch {
       set({ isLoadingDetails: false });
+    }
+  },
+
+  fetchBusinessBalance: async (altId) => {
+    set({ isLoadingBalance: true });
+    try {
+      const res = await api.get<GetBusinessBalanceResponse>(
+        "/business/balance",
+        { params: { alt_id: altId } },
+      );
+      if (res.data.success) {
+        set({ balance: res.data.data, isLoadingBalance: false });
+      } else {
+        set({ isLoadingBalance: false });
+      }
+    } catch {
+      set({ isLoadingBalance: false });
     }
   },
 

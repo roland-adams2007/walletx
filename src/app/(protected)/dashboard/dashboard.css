@@ -48,19 +48,17 @@
   background: linear-gradient(160deg, var(--brand-dark), var(--brand));
 }
 
-.bar {
-  background: repeating-linear-gradient(
-    -45deg,
-    var(--brand-soft) 0px,
-    var(--brand-soft) 3px,
-    transparent 3px,
-    transparent 7px
-  );
-  border: 1px solid var(--brand-soft);
+.revenue-circle {
+  width: 180px;
+  height: 180px;
+  background: linear-gradient(160deg, var(--brand-dark), var(--brand));
 }
-.bar.peak {
-  background: var(--amber);
-  border: none;
+
+@media (min-width: 640px) {
+  .revenue-circle {
+    width: 220px;
+    height: 220px;
+  }
 }
 
 .donut {
@@ -73,11 +71,32 @@
   border-radius: 9999px;
   background: #fff;
 }
-.donut-success {
-  background: conic-gradient(var(--brand) 0% 92%, var(--brand-soft) 92% 100%);
+
+.date-filter-trigger {
+  background: var(--brand-soft);
+  color: var(--brand-dark);
+  transition: background 0.15s ease;
 }
-.donut-failed {
-  background: conic-gradient(var(--danger) 0% 8%, var(--danger-soft) 8% 100%);
+.date-filter-trigger:hover {
+  opacity: 0.85;
+}
+
+.date-filter-dropdown {
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
+}
+
+.date-filter-option {
+  color: var(--text, #1a1a1a);
+  transition: background 0.12s ease;
+}
+.date-filter-option:hover {
+  background: var(--brand-soft);
+}
+.date-filter-option.active {
+  background: var(--brand);
+  color: #fff;
 }
 
 .biz-dropdown {
@@ -101,4 +120,26 @@
 }
 .biz-dropdown-create:hover {
   background: rgba(255, 255, 255, 0.06);
+}
+.business-switch-overlay {
+  background: rgba(19, 46, 34, 0.92);
+}
+
+.profile-dropdown {
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
+}
+
+.profile-dropdown-item {
+  color: var(--text, #1a1a1a);
+  transition: background 0.12s ease;
+}
+.profile-dropdown-item:hover {
+  background: var(--brand-soft);
+}
+
+.profile-dropdown-danger:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
