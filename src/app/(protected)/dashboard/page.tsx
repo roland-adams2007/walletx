@@ -27,14 +27,12 @@ function loadGateway(): Promise<void> {
 
   const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (!apiBase) {
-    return Promise.reject(
-      new Error("NEXT_PUBLIC_API_BASE_URL is not set."),
-    );
+    return Promise.reject(new Error("NEXT_PUBLIC_API_BASE_URL is not set."));
   }
 
   gatewayLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = `${apiBase.replace(/\/$/, "")}/gateway.js`;
+    script.src = `${apiBase.replace(/\/$/, "")}/v1/gateway.js`;
     script.async = true;
     script.onload = () => resolve();
     script.onerror = () => {
@@ -118,7 +116,13 @@ export default function OverviewPage() {
         internal: true,
         amount: amountInKobo,
         reference,
-        onInitialize: async ({ reference, amount }: { reference: string; amount: number }) => {
+        onInitialize: async ({
+          reference,
+          amount,
+        }: {
+          reference: string;
+          amount: number;
+        }) => {
           try {
             const res = await api.post("/wallet/fund/initialize", {
               amount,
@@ -126,12 +130,16 @@ export default function OverviewPage() {
               business_id: selectedBusinessId,
             });
             if (!res.data.success) {
-              throw new Error(res.data.message || "Could not start the transaction.");
+              throw new Error(
+                res.data.message || "Could not start the transaction.",
+              );
             }
             return res.data.data;
           } catch (err: any) {
             throw new Error(
-              err.response?.data?.message || err.message || "Could not start the transaction.",
+              err.response?.data?.message ||
+                err.message ||
+                "Could not start the transaction.",
             );
           }
         },
@@ -334,7 +342,10 @@ export default function OverviewPage() {
               </button>
             </div>
 
-            <label htmlFor="fund-amount" className="text-xs text-muted mb-1.5 block">
+            <label
+              htmlFor="fund-amount"
+              className="text-xs text-muted mb-1.5 block"
+            >
               Amount (NGN)
             </label>
             <input
