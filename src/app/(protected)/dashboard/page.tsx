@@ -2,18 +2,49 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Loader2, Plus, Send } from "lucide-react";
+import { ChevronDown, Loader2, Plus, Send, X } from "lucide-react";
 import {
   useBusinessStore,
   useDashboardStore,
   DashboardDateType,
 } from "../../stores/store";
+import api from "@/app/api/axios";
 
 function formatAmount(amount: number) {
   return `NGN ${amount.toLocaleString("en-NG", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
+}
+
+let gatewayLoadPromise: Promise<void> | null = null;
+
+function loadGateway(): Promise<void> {
+  if (typeof window !== "undefined" && (window as any).WalletXGateway) {
+    return Promise.resolve();
+  }
+  if (gatewayLoadPromise) return gatewayLoadPromise;
+
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!apiBase) {
+    return Promise.reject(
+      new Error("NEXT_PUBLIC_API_BASE_URL is not set."),
+    );
+  }
+
+  gatewayLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = `${apiBase.replace(/\/$/, "")}/gateway.js`;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => {
+      gatewayLoadPromise = null;
+      reject(new Error("Could not load the payment widget. Please retry."));
+    };
+    document.body.appendChild(script);
+  });
+
+  return gatewayLoadPromise;
 }
 
 const DATE_FILTERS: { label: string; value: DashboardDateType }[] = [
@@ -39,6 +70,11 @@ export default function OverviewPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
+  const [isFundOpen, setIsFundOpen] = useState(false);
+  const [fundAmount, setFundAmount] = useState("");
+  const [isFundLoading, setIsFundLoading] = useState(false);
+  const [fundError, setFundError] = useState("");
+
   useEffect(() => {
     if (!selectedBusinessId) return;
     fetchBusinessBalance(selectedBusinessId);
@@ -62,6 +98,69 @@ export default function OverviewPage() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  async function handleStartFunding() {
+    setFundError("");
+
+    const naira = parseFloat(fundAmount);
+    if (!naira || naira < 100) {
+      setFundError("Enter an amount of at least NGN 100.");
+      return;
+    }
+    const amountInKobo = Math.round(naira * 100);
+    const reference = `wallet_${selectedBusinessId ?? "biz"}_${Date.now()}`;
+
+    setIsFundLoading(true);
+    try {
+      await loadGateway();
+
+      const gateway = (window as any).WalletXGateway.setup({
+        internal: true,
+        amount: amountInKobo,
+        reference,
+        onInitialize: async ({ reference, amount }: { reference: string; amount: number }) => {
+          try {
+            const res = await api.post("/wallet/fund/initialize", {
+              amount,
+              ref: reference,
+              business_id: selectedBusinessId,
+            });
+            if (!res.data.success) {
+              throw new Error(res.data.message || "Could not start the transaction.");
+            }
+            return res.data.data;
+          } catch (err: any) {
+            throw new Error(
+              err.response?.data?.message || err.message || "Could not start the transaction.",
+            );
+          }
+        },
+        onCharge: async (body: Record<string, unknown>) => {
+          try {
+            const res = await api.post("/wallet/fund/charge", body);
+            return res.data;
+          } catch (err: any) {
+            if (err.response?.data) return err.response.data;
+            throw err;
+          }
+        },
+        callback: () => {
+          setFundAmount("");
+          if (selectedBusinessId) fetchBusinessBalance(selectedBusinessId);
+        },
+        onError: (message: string) => {
+          setFundError(message);
+          setIsFundOpen(true);
+        },
+      });
+      setIsFundOpen(false);
+      setIsFundLoading(false);
+      await gateway.openModal();
+    } catch (err: any) {
+      setIsFundLoading(false);
+      setFundError(err?.message || "Something went wrong. Please try again.");
+    }
+  }
 
   const successRate = rate?.success_rate ?? 0;
   const failedRate = rate?.failed_rate ?? 0;
@@ -186,6 +285,10 @@ export default function OverviewPage() {
           </p>
           <div className="flex flex-wrap gap-2.5">
             <button
+              onClick={() => {
+                setFundError("");
+                setIsFundOpen(true);
+              }}
               className="flex items-center gap-2 text-sm font-medium px-3.5 py-2 rounded-lg text-white"
               style={{ background: "rgba(255,255,255,0.14)" }}
             >
@@ -209,6 +312,62 @@ export default function OverviewPage() {
           </p>
         </div>
       </div>
+
+      {isFundOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.5)" }}
+          onClick={() => !isFundLoading && setIsFundOpen(false)}
+        >
+          <div
+            className="card rounded-2xl p-5 sm:p-6 w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-lg">Fund wallet</h3>
+              <button
+                onClick={() => setIsFundOpen(false)}
+                aria-label="Close"
+                disabled={isFundLoading}
+              >
+                <X className="w-4 h-4 text-muted" />
+              </button>
+            </div>
+
+            <label htmlFor="fund-amount" className="text-xs text-muted mb-1.5 block">
+              Amount (NGN)
+            </label>
+            <input
+              id="fund-amount"
+              type="number"
+              min={1}
+              step="0.01"
+              inputMode="decimal"
+              autoFocus
+              placeholder="10,000.00"
+              value={fundAmount}
+              onChange={(e) => setFundAmount(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !isFundLoading) handleStartFunding();
+              }}
+              className="w-full px-3.5 py-2.5 rounded-lg border text-sm font-mono mb-2"
+            />
+
+            {fundError && (
+              <p className="text-xs text-danger mb-2">{fundError}</p>
+            )}
+
+            <button
+              onClick={handleStartFunding}
+              disabled={isFundLoading}
+              className="w-full flex items-center justify-center gap-2 text-sm font-medium px-3.5 py-2.5 rounded-lg bg-brand text-white mt-2 disabled:opacity-60"
+            >
+              {isFundLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,11 +9,19 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Inbox,
 } from "lucide-react";
 import "./payout.css";
-import { useBankStore, useBusinessStore, usePayoutStore } from "../../../stores/store";
-import type { PayoutFilters, PayoutListItem } from "../../../stores/modules/payoutStore";
+import {
+  useBankStore,
+  useBusinessStore,
+  usePayoutStore,
+} from "../../../stores/store";
+import type {
+  PayoutFilters,
+  PayoutListItem,
+} from "../../../stores/modules/payoutStore";
 
 type DateFilterType =
   | "all"
@@ -41,28 +49,44 @@ function formatDate(date: string | null) {
   });
 }
 
+function clampPanelToViewport(
+  btnRef: React.RefObject<HTMLElement>,
+  panelRef: React.RefObject<HTMLElement>,
+  setStyle: React.Dispatch<React.SetStateAction<React.CSSProperties>>,
+) {
+  const btn = btnRef.current;
+  const panel = panelRef.current;
+  if (!btn || !panel) return;
+  const margin = 16;
+  const btnRect = btn.getBoundingClientRect();
+  const panelWidth = panel.offsetWidth;
+  const maxLeft = Math.max(margin, window.innerWidth - margin - panelWidth);
+  const clampedLeft = Math.min(Math.max(btnRect.left, margin), maxLeft);
+  setStyle({ left: clampedLeft - btnRect.left, right: "auto" });
+}
+
 function StatusPill({ status }: { status: string }) {
   const cls =
     status === "success"
       ? "pill-success"
       : status === "failed"
-      ? "pill-failed"
-      : status === "reversed"
-      ? "pill-reversed"
-      : status === "processing"
-      ? "pill-processing"
-      : "pill-pending";
+        ? "pill-failed"
+        : status === "reversed"
+          ? "pill-reversed"
+          : status === "processing"
+            ? "pill-processing"
+            : "pill-pending";
 
   const dotCls =
     status === "success"
       ? ""
       : status === "failed"
-      ? "is-failed"
-      : status === "reversed"
-      ? "is-reversed"
-      : status === "processing"
-      ? "is-processing"
-      : "is-pending";
+        ? "is-failed"
+        : status === "reversed"
+          ? "is-reversed"
+          : status === "processing"
+            ? "is-processing"
+            : "is-pending";
 
   return (
     <span className={`pill ${cls}`}>
@@ -85,7 +109,11 @@ function CopyField({ value }: { value: string }) {
 
   return (
     <button onClick={handleCopy} className="copy-btn shrink-0" type="button">
-      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+      {copied ? (
+        <Check className="w-3.5 h-3.5" />
+      ) : (
+        <Copy className="w-3.5 h-3.5" />
+      )}
     </button>
   );
 }
@@ -100,7 +128,9 @@ function DetailPanel({
   const currentPayout = usePayoutStore((s) => s.currentPayout);
   const isLoadingDetail = usePayoutStore((s) => s.isLoadingDetail);
   const detailError = usePayoutStore((s) => s.detailError);
-  const fetchPayoutByReference = usePayoutStore((s) => s.fetchPayoutByReference);
+  const fetchPayoutByReference = usePayoutStore(
+    (s) => s.fetchPayoutByReference,
+  );
   const clearCurrentPayout = usePayoutStore((s) => s.clearCurrentPayout);
   const banks = useBankStore((s) => s.banks);
 
@@ -125,8 +155,13 @@ function DetailPanel({
         className={`overlay fixed inset-0 ${reference ? "show" : ""}`}
         onClick={onClose}
       />
-      <div className={`side-panel fixed top-0 right-0 h-full overflow-y-auto ${reference ? "open" : ""}`}>
-        <div className="flex items-center justify-between px-6 py-5 border-b" style={{ borderColor: "var(--line)" }}>
+      <div
+        className={`side-panel fixed top-0 right-0 h-full overflow-y-auto ${reference ? "open" : ""}`}
+      >
+        <div
+          className="flex items-center justify-between px-6 py-5 border-b"
+          style={{ borderColor: "var(--line)" }}
+        >
           <h3 className="font-semibold text-base">Payout details</h3>
           <button onClick={onClose} type="button" className="text-muted">
             <X className="w-5 h-5" />
@@ -186,12 +221,16 @@ function DetailPanel({
               </div>
               <div className="detail-row">
                 <span className="detail-label">Account name</span>
-                <span className="detail-value">{currentPayout.account_name}</span>
+                <span className="detail-value">
+                  {currentPayout.account_name}
+                </span>
               </div>
               {currentPayout.narration && (
                 <div className="detail-row">
                   <span className="detail-label">Narration</span>
-                  <span className="detail-value">{currentPayout.narration}</span>
+                  <span className="detail-value">
+                    {currentPayout.narration}
+                  </span>
                 </div>
               )}
               {currentPayout.gateway_reference && (
@@ -212,7 +251,9 @@ function DetailPanel({
               )}
               <div className="detail-row">
                 <span className="detail-label">Retry count</span>
-                <span className="detail-value">{currentPayout.retry_count}</span>
+                <span className="detail-value">
+                  {currentPayout.retry_count}
+                </span>
               </div>
               <div className="detail-row">
                 <span className="detail-label">Initiated</span>
@@ -221,7 +262,6 @@ function DetailPanel({
                 </span>
               </div>
               <div className="detail-row">
-                <span className="detail-label">Processed</span>
                 <span className="detail-value">
                   {formatDate(currentPayout.processed_at)}
                 </span>
@@ -238,20 +278,26 @@ function FilterPanel({
   show,
   onClose,
   onApply,
+  panelRef,
+  style,
 }: {
   show: boolean;
   onClose: () => void;
   onApply: (filters: PayoutFilters) => void;
+  panelRef: React.RefObject<HTMLDivElement>;
+  style: React.CSSProperties;
 }) {
   const [status, setStatus] = useState("");
   const [source, setSource] = useState("");
   const [minAmount, setMinAmount] = useState("");
   const [maxAmount, setMaxAmount] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     }
@@ -259,7 +305,7 @@ function FilterPanel({
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [show, onClose]);
+  }, [show, onClose, panelRef]);
 
   function handleApply() {
     onApply({
@@ -281,7 +327,11 @@ function FilterPanel({
   }
 
   return (
-    <div ref={ref} className={`filter-panel absolute mt-2 rounded-xl p-4 space-y-4 ${show ? "show" : ""}`}>
+    <div
+      ref={panelRef}
+      style={style}
+      className={`filter-panel absolute mt-2 rounded-xl p-4 space-y-4 ${show ? "show" : ""}`}
+    >
       <div>
         <label className="field-label block mb-1.5 text-xs font-semibold text-muted uppercase">
           Status
@@ -322,7 +372,9 @@ function FilterPanel({
           </label>
           <input
             value={minAmount}
-            onChange={(e) => setMinAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+            onChange={(e) =>
+              setMinAmount(e.target.value.replace(/[^0-9.]/g, ""))
+            }
             placeholder="0.00"
             className="select-field w-full rounded-lg px-3 py-2 text-sm"
           />
@@ -333,7 +385,9 @@ function FilterPanel({
           </label>
           <input
             value={maxAmount}
-            onChange={(e) => setMaxAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+            onChange={(e) =>
+              setMaxAmount(e.target.value.replace(/[^0-9.]/g, ""))
+            }
             placeholder="0.00"
             className="select-field w-full rounded-lg px-3 py-2 text-sm"
           />
@@ -365,17 +419,22 @@ function DatePanel({
   onClose,
   active,
   onSelect,
+  panelRef,
+  style,
 }: {
   show: boolean;
   onClose: () => void;
   active: DateFilterType;
   onSelect: (value: DateFilterType) => void;
+  panelRef: React.RefObject<HTMLDivElement>;
+  style: React.CSSProperties;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     }
@@ -383,7 +442,7 @@ function DatePanel({
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [show, onClose]);
+  }, [show, onClose, panelRef]);
 
   const options: { label: string; value: DateFilterType }[] = [
     { label: "All time", value: "all" },
@@ -394,7 +453,11 @@ function DatePanel({
   ];
 
   return (
-    <div ref={ref} className={`date-panel absolute mt-2 rounded-xl p-2 ${show ? "show" : ""}`}>
+    <div
+      ref={panelRef}
+      style={style}
+      className={`date-panel absolute mt-2 rounded-xl p-2 ${show ? "show" : ""}`}
+    >
       {options.map((opt) => (
         <button
           key={opt.value}
@@ -427,7 +490,19 @@ export default function PayoutsPage() {
   const [showDatePanel, setShowDatePanel] = useState(false);
   const [dateType, setDateType] = useState<DateFilterType>("all");
   const [activeFilters, setActiveFilters] = useState<PayoutFilters>({});
-  const [selectedReference, setSelectedReference] = useState<string | null>(null);
+  const [selectedReference, setSelectedReference] = useState<string | null>(
+    null,
+  );
+
+  const dateBtnRef = useRef<HTMLButtonElement>(null);
+  const datePanelRef = useRef<HTMLDivElement>(null);
+  const filterBtnRef = useRef<HTMLButtonElement>(null);
+  const filterPanelRef = useRef<HTMLDivElement>(null);
+  const [datePanelStyle, setDatePanelStyle] = useState<React.CSSProperties>(
+    {},
+  );
+  const [filterPanelStyle, setFilterPanelStyle] =
+    useState<React.CSSProperties>({});
 
   useEffect(() => {
     fetchBanks();
@@ -441,7 +516,32 @@ export default function PayoutsPage() {
     };
     setFilters(filters);
     fetchPayouts(page, selectedBusinessId, filters);
-  }, [page, selectedBusinessId, activeFilters, dateType, fetchPayouts, setFilters]);
+  }, [
+    page,
+    selectedBusinessId,
+    activeFilters,
+    dateType,
+    fetchPayouts,
+    setFilters,
+  ]);
+
+  useEffect(() => {
+    if (!showDatePanel) return;
+    clampPanelToViewport(dateBtnRef, datePanelRef, setDatePanelStyle);
+    const onResize = () =>
+      clampPanelToViewport(dateBtnRef, datePanelRef, setDatePanelStyle);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [showDatePanel]);
+
+  useEffect(() => {
+    if (!showFilters) return;
+    clampPanelToViewport(filterBtnRef, filterPanelRef, setFilterPanelStyle);
+    const onResize = () =>
+      clampPanelToViewport(filterBtnRef, filterPanelRef, setFilterPanelStyle);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [showFilters]);
 
   function handleApplyFilters(filters: PayoutFilters) {
     setPage(1);
@@ -456,41 +556,48 @@ export default function PayoutsPage() {
   const isEmpty = !isLoading && !error && payouts.length === 0;
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="w-full max-w-full min-w-0">
       <div className="card rounded-2xl overflow-visible">
-        <div className="flex items-center justify-between px-6 py-5">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-5 flex-wrap gap-3">
           <h2 className="font-semibold text-lg">Payouts</h2>
-          <div className="flex items-center gap-2 relative">
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
             <div className="relative">
               <button
+                ref={dateBtnRef}
                 onClick={() => {
                   setShowDatePanel((p) => !p);
                   setShowFilters(false);
                 }}
                 type="button"
-                className="btn-secondary flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium"
+                className="btn-secondary flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium whitespace-nowrap"
               >
                 <Calendar className="w-4 h-4" />
                 {dateType === "all"
                   ? "All time"
-                  : dateType.replace("_", " ").replace(/^\w/, (c) => c.toUpperCase())}
+                  : dateType
+                      .replace("_", " ")
+                      .replace(/^\w/, (c) => c.toUpperCase())}
+                <ChevronDown className="w-3.5 h-3.5" />
               </button>
               <DatePanel
                 show={showDatePanel}
                 onClose={() => setShowDatePanel(false)}
                 active={dateType}
                 onSelect={handleSelectDate}
+                panelRef={datePanelRef}
+                style={datePanelStyle}
               />
             </div>
 
             <div className="relative">
               <button
+                ref={filterBtnRef}
                 onClick={() => {
                   setShowFilters((p) => !p);
                   setShowDatePanel(false);
                 }}
                 type="button"
-                className="btn-secondary flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium"
+                className="btn-secondary flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium whitespace-nowrap"
               >
                 <Filter className="w-4 h-4" />
                 Filters
@@ -499,6 +606,8 @@ export default function PayoutsPage() {
                 show={showFilters}
                 onClose={() => setShowFilters(false)}
                 onApply={handleApplyFilters}
+                panelRef={filterPanelRef}
+                style={filterPanelStyle}
               />
             </div>
           </div>
@@ -540,7 +649,9 @@ export default function PayoutsPage() {
                   <td>
                     <StatusPill status={payout.status} />
                   </td>
-                  <td className="text-muted">{formatDate(payout.created_at)}</td>
+                  <td className="text-muted">
+                    {formatDate(payout.created_at)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -558,7 +669,9 @@ export default function PayoutsPage() {
             </div>
           )}
 
-          <div className={`empty-state flex-col items-center justify-center py-16 ${isEmpty ? "show" : ""}`}>
+          <div
+            className={`empty-state flex-col items-center justify-center py-16 ${isEmpty ? "show" : ""}`}
+          >
             <Inbox className="w-8 h-8 text-muted mb-3" />
             <p className="text-sm font-medium">No payouts yet</p>
             <p className="text-sm text-muted">
@@ -568,7 +681,10 @@ export default function PayoutsPage() {
         </div>
 
         {meta && meta.last_page > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t" style={{ borderColor: "var(--line)" }}>
+          <div
+            className="flex items-center justify-between px-4 sm:px-6 py-4 border-t flex-wrap gap-3"
+            style={{ borderColor: "var(--line)" }}
+          >
             <span className="text-sm text-muted">
               Page {meta.current_page} of {meta.last_page}
             </span>
