@@ -7,6 +7,7 @@ export type TransactionListItem = {
   reference: string;
   channel: string;
   date: string;
+  amount:number;
 };
 
 export type TransactionDetail = {
