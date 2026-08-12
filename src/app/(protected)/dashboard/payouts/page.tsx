@@ -50,8 +50,8 @@ function formatDate(date: string | null) {
 }
 
 function clampPanelToViewport(
-  btnRef: React.RefObject<HTMLElement>,
-  panelRef: React.RefObject<HTMLElement>,
+  btnRef: React.RefObject<HTMLElement | null>,
+  panelRef: React.RefObject<HTMLElement | null>,
   setStyle: React.Dispatch<React.SetStateAction<React.CSSProperties>>,
 ) {
   const btn = btnRef.current;
@@ -498,11 +498,10 @@ export default function PayoutsPage() {
   const datePanelRef = useRef<HTMLDivElement>(null);
   const filterBtnRef = useRef<HTMLButtonElement>(null);
   const filterPanelRef = useRef<HTMLDivElement>(null);
-  const [datePanelStyle, setDatePanelStyle] = useState<React.CSSProperties>(
+  const [datePanelStyle, setDatePanelStyle] = useState<React.CSSProperties>({});
+  const [filterPanelStyle, setFilterPanelStyle] = useState<React.CSSProperties>(
     {},
   );
-  const [filterPanelStyle, setFilterPanelStyle] =
-    useState<React.CSSProperties>({});
 
   useEffect(() => {
     fetchBanks();
