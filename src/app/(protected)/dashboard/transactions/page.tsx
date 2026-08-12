@@ -356,8 +356,8 @@ export default function TransactionsPage() {
 
   // Clamp panel functions
   function clampPanelToViewport(
-    btnRef: React.RefObject<HTMLElement>,
-    panelRef: React.RefObject<HTMLElement>,
+    btnRef: React.RefObject<HTMLElement | null>,
+    panelRef: React.RefObject<HTMLElement | null>,
     setStyle: React.Dispatch<React.SetStateAction<React.CSSProperties>>,
   ) {
     const btn = btnRef.current;

@@ -284,7 +284,7 @@ function FilterPanel({
   show: boolean;
   onClose: () => void;
   onApply: (filters: PayoutFilters) => void;
-  panelRef: React.RefObject<HTMLDivElement>;
+  panelRef: React.RefObject<HTMLDivElement | null>;
   style: React.CSSProperties;
 }) {
   const [status, setStatus] = useState("");
@@ -426,7 +426,7 @@ function DatePanel({
   onClose: () => void;
   active: DateFilterType;
   onSelect: (value: DateFilterType) => void;
-  panelRef: React.RefObject<HTMLDivElement>;
+  panelRef: React.RefObject<HTMLDivElement | null>;
   style: React.CSSProperties;
 }) {
   useEffect(() => {
