@@ -5,7 +5,7 @@ const protectedRoutes = ["/dashboard"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const hasSession = request.cookies.has("refresh_token");
+  const hasSession = request.cookies.has("refreshToken");
 
   if (pathname === "/dashboard/settings") {
     return NextResponse.redirect(
